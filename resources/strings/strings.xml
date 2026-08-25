@@ -1,0 +1,16 @@
+<strings>
+    <string id="AppName">Santorini Sunset</string>
+
+    <!--
+      No color-theme setting here on purpose: this face's whole identity is
+      the twilight/sunset scene, and every variant shown in the original
+      reference mockup (always-on, dark, minimal) is dark-toned - there was
+      no "light" version to match. Keeping one fixed dusk palette instead
+      of the Light/Dark/Auto switcher Ritmo has.
+    -->
+    <string id="SettingShowSeconds">Show seconds (high-power mode only)</string>
+
+    <string id="SettingBackground">Background</string>
+    <string id="SettingBackgroundPhoto">Photo (your Santorini sunset)</string>
+    <string id="SettingBackgroundVector">Vector illustration (lighter on memory)</string>
+</strings>

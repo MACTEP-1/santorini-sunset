@@ -1,0 +1,15 @@
+<drawables>
+    <bitmap id="LauncherIcon" filename="launcher_icon.png"/>
+
+    <!--
+      Photo background - your Santorini sunset photo, cropped to a square
+      around the windmill/sunset/ship and resized to 440x440, then
+      color-quantized to a 200-color adaptive palette to keep the resource
+      small (see README.md "Background: vector vs photo" for the
+      reasoning/numbers). Drawn scaled-to-fit per device at runtime via
+      Dc.drawScaledBitmap(), so this one stored resolution covers every
+      device in manifest.xml's product list regardless of its actual
+      screen size.
+    -->
+    <bitmap id="BgPhoto" filename="bg_photo.png"/>
+</drawables>

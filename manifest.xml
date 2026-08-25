@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Santorini Sunset - Connect IQ watch face manifest
+
+  minApiLevel is 4.0.0 (bumped from the original Arctic Peak project's
+  3.3.0) because the photo background is drawn with Dc.drawScaledBitmap(),
+  which needs API 4.0.0 - every device in the product list below is CIQ4+
+  already, so this doesn't drop any of them (same reasoning as
+  milan-personal's manifest).
+
+  NOTE ON DEVICE IDS: same caveat as Ritmo's manifest - this device list is a
+  best-effort snapshot, not guaranteed current. Before your first build, use
+  "Monkey C: Edit Products" in the VS Code extension to refresh it against
+  your installed SDK.
+-->
+<iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
+  <iq:application
+    id="8eb35071-3151-4f55-9fb1-06664f01f526"
+    type="watchface"
+    name="@Strings.AppName"
+    entry="SantoriniSunsetApp"
+    launcherIcon="@Drawables.LauncherIcon"
+    minApiLevel="4.0.0">
+
+    <iq:products>
+      <iq:product id="venu2"/>
+      <iq:product id="venu2s"/>
+      <iq:product id="vivoactive4"/>
+      <iq:product id="vivoactive5"/>
+      <iq:product id="fenix7"/>
+      <iq:product id="fenix7s"/>
+      <iq:product id="fenix7x"/>
+      <iq:product id="epix2"/>
+      <iq:product id="fr265"/>
+      <iq:product id="fr265s"/>
+      <iq:product id="fr965"/>
+    </iq:products>
+
+    <!-- No permissions needed: no Auto theme/sunrise lookup (this face uses
+         one fixed dusk palette, see strings.xml), no SensorHistory secondary
+         field, no networking. -->
+
+    <iq:languages>
+      <iq:language>eng</iq:language>
+    </iq:languages>
+
+    <iq:barrels/>
+  </iq:application>
+</iq:manifest>

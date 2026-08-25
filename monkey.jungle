@@ -1,0 +1,3 @@
+# Santorini Sunset Connect IQ project build file
+project.manifest = manifest.xml
+base.resourcePath = resources

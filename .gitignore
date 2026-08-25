@@ -1,0 +1,17 @@
+# Connect IQ build output
+bin/
+*.prg
+*.iq
+*.debug.xml
+
+# Signing key - NEVER commit this. Yours lives one level up
+# (garmin/developer_key per your build command), so it's outside this
+# folder already, but keeping this here as a guard in case that changes.
+developer_key
+*.der
+*.pem
+
+# Editor/OS cruft
+.vscode/
+.DS_Store
+Thumbs.db
