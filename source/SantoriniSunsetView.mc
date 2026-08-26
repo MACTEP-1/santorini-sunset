@@ -31,14 +31,22 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     // sqrt(0.25 - dy^2) is the half-width available at vertical offset dy
     // from center before the round bezel clips it. Done on paper, not yet
     // verified live - see README.md.
-    const ICON_Y = 0.14;
+    // Recalculated from Rossonero's real screenshot: this project used the
+    // exact same TIME_Y/STATS_Y/STATS_RADIUS values Rossonero originally
+    // shipped with (they were copied from here), and Rossonero's own
+    // screenshot showed those values still let FONT_NUMBER_HOT's rendered
+    // bottom edge overlap the stat badges - meaning this project almost
+    // certainly has the identical unreported bug. Applying the same
+    // correction proactively (TIME_Y up, badges nudged accordingly) -
+    // not yet confirmed on an actual screenshot of this project.
+    const ICON_Y = 0.10;
     const ICON_SIZE = 0.09;
     const DATE_Y = 0.225;
-    const TIME_Y = 0.40;
-    const STATS_Y = 0.76;
-    const STATS_RADIUS = 0.09;
+    const TIME_Y = 0.32;
+    const STATS_Y = 0.745;
+    const STATS_RADIUS = 0.095;
     const STATS_SPACING = 0.24; // center-to-center
-    const BATTERY_Y = 0.905;
+    const BATTERY_Y = 0.875;
 
     const FG = 0xf2f6f8;
     const DIM = 0xc9d6dd;
@@ -320,6 +328,13 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         return steps.format("%d");
     }
 
+    // Fixed proactively: Rossonero and Milan Personal share this exact
+    // stat-badge code, and a real screenshot of Rossonero showed the
+    // numbers sitting too close to the badge's bottom edge - drawText's
+    // top-anchor plus a small guessed offset didn't account for how much
+    // of a small badge's height FONT_TINY actually occupies. Switched to
+    // TEXT_JUSTIFY_VCENTER (centers on the anchor regardless of actual
+    // font height) rather than wait to hit the same bug here too.
     function drawStatBadge(dc as Graphics.Dc, cx as Lang.Float, cy as Lang.Float, r as Lang.Float, icon as Lang.Symbol, text as Lang.String) as Void {
         dc.setColor(0x0d1b26, Graphics.COLOR_TRANSPARENT);
         dc.fillCircle(cx, cy, r);
@@ -327,18 +342,19 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         dc.setPenWidth(2);
         dc.drawCircle(cx, cy, r);
 
-        var iconSize = r * 2.0 * 0.30;
-        var iconY = cy - r * 0.55;
+        var iconSize = r * 0.42;
+        var iconTopY = cy - r * 0.62;
         if (icon == :steps) {
-            Icons.drawSteps(dc, cx - iconSize * 0.5, iconY, iconSize, ACCENT);
+            Icons.drawSteps(dc, cx - iconSize * 0.5, iconTopY, iconSize, ACCENT);
         } else if (icon == :heart) {
-            Icons.drawHeart(dc, cx - iconSize * 0.5, iconY, iconSize, ACCENT);
+            Icons.drawHeart(dc, cx - iconSize * 0.5, iconTopY, iconSize, ACCENT);
         } else if (icon == :flame) {
-            Icons.drawFlame(dc, cx - iconSize * 0.5, iconY, iconSize, ACCENT);
+            Icons.drawFlame(dc, cx - iconSize * 0.5, iconTopY, iconSize, ACCENT);
         }
 
         dc.setColor(FG, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, cy + r * 0.08, Graphics.FONT_TINY, text, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx, cy + r * 0.28, Graphics.FONT_TINY, text,
+            Graphics.TEXT_JUSTIFY_CENTER + Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
     // Dim, icon-free "steps · battery%" line for the always-on frame - same
@@ -357,15 +373,16 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     function drawBattery(dc as Graphics.Dc, w as Lang.Number, h as Lang.Number) as Void {
         var battery = System.getSystemStats().battery;
         var text = battery.format("%d") + "%";
-        var iconSize = w * 0.05;
+        var iconSize = w * 0.055;
         var textWidth = dc.getTextWidthInPixels(text, Graphics.FONT_XTINY);
         var groupWidth = iconSize + w * 0.02 + textWidth;
         var x = w * 0.5 - groupWidth * 0.5;
-        var y = h * BATTERY_Y;
+        var battYCenter = h * BATTERY_Y;
 
-        Icons.drawBattery(dc, x, y - iconSize * 0.25, iconSize, battery, DIM, ACCENT);
+        Icons.drawBattery(dc, x, battYCenter - iconSize * 0.5, iconSize, battery, DIM, ACCENT);
         dc.setColor(DIM, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(x + iconSize + w * 0.02, y - iconSize * 0.15, Graphics.FONT_XTINY, text, Graphics.TEXT_JUSTIFY_LEFT);
+        dc.drawText(x + iconSize + w * 0.02, battYCenter, Graphics.FONT_XTINY, text,
+            Graphics.TEXT_JUSTIFY_LEFT + Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
     function readHeartRate() as Lang.Number? {

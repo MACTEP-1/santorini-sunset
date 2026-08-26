@@ -15,6 +15,28 @@ that direction was set. Same caveat as the other projects in this set: I
 simulated device - treat it as a carefully-reasoned first draft, not
 tested software.
 
+## Second fix carried over from Rossonero
+
+Rossonero shipped with the exact same `TIME_Y`/`STATS_Y`/`STATS_RADIUS`
+values this project still has (they were originally copied from here),
+and Rossonero's own screenshot showed those values let the time overlap
+the stat badges - `FONT_NUMBER_HOT` renders taller than assumed. This
+project almost certainly has the identical bug, just not yet seen in a
+screenshot. Applied the same correction proactively: `TIME_Y` 0.40 ->
+0.32, `STATS_Y`/`STATS_RADIUS` and `BATTERY_Y` adjusted to match. Not
+confirmed here specifically - worth checking on your first build of this
+project too.
+
+## Fix carried over from Rossonero
+
+Rossonero (which shares this exact stat-badge code) turned up a real bug
+in a screenshot: the numbers were rendering too close to each badge's
+bottom edge because the text was top-anchored with a guessed offset
+rather than actually centered. Fixed here too, proactively, before it
+showed up in this project's own screenshot - see `rossonero/README.md`'s
+"Fixes after the first real build" for the full explanation
+(`TEXT_JUSTIFY_VCENTER` plus a small radius bump).
+
 ## Background: photo (default) vs vector
 
 Both are fully wired in - pick with the "Background" setting.
