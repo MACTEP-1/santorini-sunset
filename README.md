@@ -15,6 +15,53 @@ that direction was set. Same caveat as the other projects in this set: I
 simulated device - treat it as a carefully-reasoned first draft, not
 tested software.
 
+## Ninth fix: on-device "Customize" settings, no phone needed
+
+You noticed some of your other installed watch faces show a gear icon/
+"Customize" option when you hold the button in watch-face selection mode,
+letting you edit their settings right on the watch, and asked if we could
+do that here too for the 3 stat circles.
+
+Good news: yes, and it's a real, separate Connect IQ API
+(`AppBase.getSettingsView()`, since API 3.2.0 - this project targets
+4.0.0, no issue) - researched properly against Garmin's docs and forum
+threads before writing this rather than guessing (see `source/
+SettingsMenu.mc`'s header comment for the sourcing). Crucially, it's
+**independent of the phone-based Settings from settings.xml/
+properties.xml** (the 8th-round feature below): this new one works while
+sideloaded, no store/Beta publication required, which is exactly the
+"test it right now" path you have. Hold the button in watch-face
+selection mode, select this one, and you should see "Customize" alongside
+"Apply"/"Delete" - selecting it opens a menu: Left/Middle/Right circle
+(each showing its current field, tap to change) and World Clock Offset.
+Both mechanisms read/write the exact same underlying Properties, so they
+can't get out of sync - whichever one you used most recently is what's
+showing.
+
+One real implementation detail worth flagging: Garmin's own bundled
+"Analog" sample app (the canonical example most forum posts point to for
+this feature) wraps its menu in an extra intermediate View, and multiple
+independent bug reports trace a real double-back-press glitch on actual
+hardware directly to that wrapper pattern. Not something I could catch
+myself without a device, so this was deliberately built flatter instead -
+`getSettingsView()` returns the real top-level menu/delegate pair
+directly, matching the pattern a couple of forum threads confirmed
+working cleanly, rather than copying Analog's structure.
+
+The world-clock offset submenu shows plain "UTC+2"-style labels rather
+than the city-name hints ("UTC+2 (Athens)") the phone-based Settings
+show - simplification to keep this on-device submenu's code (and the
+watch's tiny screen) simple, the offset number is what actually matters
+functionally.
+
+Like everything else in this project, this has not run on real hardware
+or the simulator - the `Menu2`/`MenuItem`/`Menu2InputDelegate` API calls
+are verified against Garmin's actual API docs and real forum code
+samples, not guessed, but this is genuinely the largest chunk of
+previously-unused API surface added in one round this whole project. If
+"Customize" doesn't show up at all after a build, or a submenu comes back
+empty, that's the first place to look.
+
 ## Eighth fix: user-selectable stat-badge data, plus a world clock
 
 You asked for the 3 stat circles to be customizable, and floated a
