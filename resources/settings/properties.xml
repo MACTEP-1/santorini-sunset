@@ -3,4 +3,20 @@
     <!-- 0 = Photo, 1 = Vector - defaults to Photo since that's this face's
          actual identity now; Vector is the lighter-weight fallback. -->
     <property id="Background" type="number">0</property>
+
+    <!-- Which stat each of the 3 badge circles shows. Values match
+         SantoriniSunsetView.mc's FIELD_* constants exactly:
+         0=Steps 1=Heart Rate 2=Calories 3=Distance 4=Floors Climbed
+         5=Active Minutes 6=Battery 7=Stress 8=Temperature 9=World Clock.
+         Defaults (0/1/2) reproduce the original fixed steps/heart/calories
+         layout, so an existing install looks unchanged until the user
+         actually opens Settings. -->
+    <property id="Field1" type="number">0</property>
+    <property id="Field2" type="number">1</property>
+    <property id="Field3" type="number">2</property>
+
+    <!-- Whole-hour UTC offset for the World Clock field, e.g. 9 for
+         Tokyo/UTC+9, -5 for New York (standard time). Only matters if a
+         circle is actually set to World Clock. -->
+    <property id="WorldClockOffset" type="number">0</property>
 </properties>

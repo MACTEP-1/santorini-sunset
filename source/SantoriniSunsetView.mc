@@ -8,6 +8,7 @@ using Toybox.Time.Gregorian;
 using Toybox.Application.Properties;
 using Toybox.Timer;
 using Toybox.Math;
+using Toybox.Weather;
 
 //
 // SantoriniSunsetView.mc - draws the whole watch face.
@@ -51,6 +52,23 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     const FG = 0xf2f6f8;
     const DIM = 0xc9d6dd;
     const ACCENT = 0x5fb3e0;
+    // Soft teal/green for the backdrop dome in the awake-only top icon
+    // scene - see Icons.drawSantoriniScene.
+    const BG_DOME = 0x8cc3aa;
+
+    // Selectable stat-badge fields - numeric IDs match the Field1/Field2/
+    // Field3 settings.xml list values exactly, so don't renumber these
+    // without updating settings.xml/strings.xml to match.
+    const FIELD_STEPS = 0;
+    const FIELD_HEART = 1;
+    const FIELD_CALORIES = 2;
+    const FIELD_DISTANCE = 3;
+    const FIELD_FLOORS = 4;
+    const FIELD_ACTIVE_MIN = 5;
+    const FIELD_BATTERY = 6;
+    const FIELD_STRESS = 7;
+    const FIELD_TEMPERATURE = 8;
+    const FIELD_WORLD_CLOCK = 9;
 
     function initialize() {
         WatchFace.initialize();
@@ -108,11 +126,25 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         var w = dc.getWidth();
         var h = dc.getHeight();
 
-        dc.setColor(0x0a1826, 0x0a1826);
-        dc.clear();
-
+        // BUG FIX: this used to clear to 0x0a1826 (a dark navy) in BOTH
+        // states, then only draw the photo/vector background on top when
+        // awake - meaning every pixel on the display sat at that navy
+        // value, not true black, for the entire always-on period. On an
+        // AMOLED display that's real, continuous power draw and burn-in
+        // exposure across the whole screen, which is exactly what tripped
+        // your simulator's "luminance exceeding 10%" warning - confirmed
+        // by rendering both versions and measuring: the navy base fill
+        // alone accounts for the majority of that 10.81% usage. Rossonero
+        // and milan-personal never had this bug - they already clear to
+        // true COLOR_BLACK unconditionally and only tint the canvas when
+        // awake. Matching that pattern here.
         if (awake) {
+            dc.setColor(0x0a1826, 0x0a1826);
+            dc.clear();
             drawBackground(dc, w, h);
+        } else {
+            dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+            dc.clear();
         }
         // Always-on/low-power: no full-canvas background (photo or vector -
         // that's a lot of lit AMOLED pixels to hold for hours, same
@@ -242,9 +274,27 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
 
     // ---- Top icon + date -------------------------------------------------
 
+    // Swapped the generic windmill glyph for a blue-domed Cycladic scene -
+    // a much more specifically-Santorini symbol (your suggestion, further
+    // refined to match the multi-building reference photo you sent). Awake
+    // and asleep use two different icon functions on purpose - see
+    // Icons.drawSantoriniScene's comment for why the richer version isn't
+    // used when asleep.
     function drawTopIcon(dc as Graphics.Dc, w as Lang.Number, h as Lang.Number, awake as Lang.Boolean) as Void {
-        var color = awake ? DIM : 0x777777;
-        Icons.drawWindmill(dc, w * 0.5 - w * ICON_SIZE * 0.5, h * ICON_Y, w * ICON_SIZE, color);
+        var iconX = w * 0.5 - w * ICON_SIZE * 0.5;
+        var iconY = h * ICON_Y;
+        var iconW = w * ICON_SIZE;
+        if (awake) {
+            Icons.drawSantoriniScene(dc, iconX, iconY, iconW, FG, ACCENT, BG_DOME);
+        } else {
+            // Single building, single dark tone for both body and dome -
+            // same burn-in luminance-budget reasoning as draw()'s comment
+            // above (darkened from windmill's 0x777777 to 0x444444
+            // already), and the only version of the icon that stays
+            // legible once everything's reduced to near-black gray at
+            // this size - see Icons.drawSantoriniScene's comment.
+            Icons.drawChurch(dc, iconX, iconY, iconW, 0x444444, 0x444444);
+        }
     }
 
     function drawDate(dc as Graphics.Dc, w as Lang.Number, h as Lang.Number, now as Gregorian.Info, awake as Lang.Boolean) as Void {
@@ -255,7 +305,29 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         var weekday = now.day_of_week as Lang.String;
         var day = now.day as Lang.Number;
         var str = weekday.toUpper() + " " + day.format("%d");
-        dc.setColor(awake ? DIM : 0x777777, Graphics.COLOR_TRANSPARENT);
+
+        // BUG FIX: DIM (a pale blue-gray, 0xc9d6dd) turned out to be
+        // almost exactly the same brightness as the sky at DATE_Y in your
+        // actual photo (sampled it - around RGB 216,200,161 there, a warm
+        // cream), just a different hue - nearly invisible, confirmed from
+        // your screenshot. A flat color can't win against every part of a
+        // photo (dark sea, bright sky, dark windmill silhouette all pass
+        // through this row on different builds/settings), so instead of
+        // picking a different single color and hoping, this draws a small
+        // dark shadow copy of the text first, then the real text in FG
+        // (bright white, same tone the time's hour digits already use and
+        // read fine in your screenshot) on top - checked against the
+        // actual photo crop at this position before shipping, reads
+        // clearly now. Shadow only drawn when awake - asleep already sits
+        // on a solid black background (see draw()'s burn-in fix), so a
+        // shadow there would just be wasted always-on pixels.
+        if (awake) {
+            dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(w * 0.5 + 1, h * DATE_Y + 1, Graphics.FONT_SMALL, str, Graphics.TEXT_JUSTIFY_CENTER);
+        }
+        // Darkened from 0x777777 when asleep - same burn-in margin
+        // reasoning as drawTopIcon() above.
+        dc.setColor(awake ? FG : 0x444444, Graphics.COLOR_TRANSPARENT);
         dc.drawText(w * 0.5, h * DATE_Y, Graphics.FONT_SMALL, str, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
@@ -287,8 +359,13 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         var startX = w * 0.5 - totalWidth / 2;
         var y = h * TIME_Y;
 
-        var fgColor = awake ? FG : 0xdddddd;
-        var accentColor = awake ? ACCENT : 0x999999;
+        // Darkened from 0xdddddd/0x999999 - same burn-in margin reasoning
+        // as drawTopIcon()/drawDate() above. This is the single biggest
+        // lever here: FONT_NUMBER_HOT is a lot of always-on screen area,
+        // so even a moderate brightness cut meaningfully reduces the
+        // luminance budget without changing size or position.
+        var fgColor = awake ? FG : 0x666666;
+        var accentColor = awake ? ACCENT : 0x555555;
 
         dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
         dc.drawText(startX, y, Graphics.FONT_NUMBER_HOT, hourStr, Graphics.TEXT_JUSTIFY_LEFT);
@@ -296,26 +373,110 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         dc.drawText(startX + hourWidth, y, Graphics.FONT_NUMBER_HOT, colonStr + minStr, Graphics.TEXT_JUSTIFY_LEFT);
     }
 
-    // ---- Stats: fixed steps / heart rate / calories badges ---------------
-    // Not user-configurable like Ritmo's secondary fields - kept to exactly
-    // the three the reference mockup shows, each in its own outlined circle
-    // badge sitting on top of the mountain/tree art.
+    // ---- Stats: user-selectable badges (Settings > Field 1/2/3) -----------
+    // Used to be fixed steps/heart rate/calories. Each of the three circles
+    // now independently shows whatever FIELD_* the user picked in Settings
+    // (defaults are still steps/heart rate/calories, so an existing install
+    // that hasn't touched Settings looks identical to before this change).
 
     function drawStats(dc as Graphics.Dc, w as Lang.Number, h as Lang.Number) as Void {
         var info = ActivityMonitor.getInfo();
-        var steps = (info.steps != null) ? info.steps : 0;
-        var calories = (info.calories != null) ? info.calories : 0;
-        var hr = readHeartRate();
-        var hrText = (hr != null) ? hr.format("%d") : "--";
+
+        var field1 = Properties.getValue("Field1") as Lang.Number?;
+        var field2 = Properties.getValue("Field2") as Lang.Number?;
+        var field3 = Properties.getValue("Field3") as Lang.Number?;
+        if (field1 == null) { field1 = FIELD_STEPS; }
+        if (field2 == null) { field2 = FIELD_HEART; }
+        if (field3 == null) { field3 = FIELD_CALORIES; }
 
         var cy = h * STATS_Y;
         var r = w * STATS_RADIUS;
         var spacing = w * STATS_SPACING;
         var cxMid = w * 0.5;
 
-        drawStatBadge(dc, cxMid - spacing, cy, r, :steps, formatSteps(steps));
-        drawStatBadge(dc, cxMid, cy, r, :heart, hrText);
-        drawStatBadge(dc, cxMid + spacing, cy, r, :flame, calories.format("%d"));
+        drawStatBadge(dc, cxMid - spacing, cy, r, field1, fieldText(field1, info));
+        drawStatBadge(dc, cxMid, cy, r, field2, fieldText(field2, info));
+        drawStatBadge(dc, cxMid + spacing, cy, r, field3, fieldText(field3, info));
+    }
+
+    // Text for one FIELD_* id. info is the shared ActivityMonitor.getInfo()
+    // snapshot from drawStats() - passed in rather than re-fetched per
+    // field so all three badges reflect the exact same instant.
+    function fieldText(fieldId as Lang.Number, info as ActivityMonitor.Info) as Lang.String {
+        if (fieldId == FIELD_HEART) {
+            var hr = readHeartRate();
+            return (hr != null) ? hr.format("%d") : "--";
+        } else if (fieldId == FIELD_CALORIES) {
+            var cal = (info.calories != null) ? info.calories : 0;
+            return cal.format("%d");
+        } else if (fieldId == FIELD_DISTANCE) {
+            // Info.distance is centimeters since midnight - convert to the
+            // device's configured unit (System.UNIT_METRIC/UNIT_STATUTE,
+            // same enum distanceUnits uses elsewhere in Connect IQ).
+            var distCm = (info.distance != null) ? info.distance : 0;
+            if (System.getDeviceSettings().distanceUnits == System.UNIT_METRIC) {
+                return (distCm / 100000.0).format("%.1f") + "km";
+            }
+            return (distCm / 160934.4).format("%.1f") + "mi";
+        } else if (fieldId == FIELD_FLOORS) {
+            var floors = (info.floorsClimbed != null) ? info.floorsClimbed : 0;
+            return floors.format("%d");
+        } else if (fieldId == FIELD_ACTIVE_MIN) {
+            var mins = 0;
+            if (info.activeMinutesDay != null) {
+                mins = info.activeMinutesDay.total;
+            }
+            return mins.format("%d") + "m";
+        } else if (fieldId == FIELD_BATTERY) {
+            return System.getSystemStats().battery.format("%d") + "%";
+        } else if (fieldId == FIELD_STRESS) {
+            var stress = info.stressScore;
+            return (stress != null) ? stress.format("%d") : "--";
+        } else if (fieldId == FIELD_TEMPERATURE) {
+            return temperatureText();
+        } else if (fieldId == FIELD_WORLD_CLOCK) {
+            return worldClockText();
+        }
+        // FIELD_STEPS, and the fallback for any unrecognized value.
+        var steps = (info.steps != null) ? info.steps : 0;
+        return formatSteps(steps);
+    }
+
+    // Ambient temperature via the connected phone's weather data - NOT a
+    // physical sensor on this device, so it needs a Bluetooth-connected
+    // phone with the Connect app and (per manifest.xml) the Weather
+    // permission, and can legitimately come back null (no phone, no signal
+    // yet, weather not synced). Falls back to "--" rather than guessing.
+    // Least-tested part of this feature - see README.
+    function temperatureText() as Lang.String {
+        var conditions = (Toybox has :Weather) ? Weather.getCurrentConditions() : null;
+        if (conditions == null || conditions.temperature == null) {
+            return "--";
+        }
+        var celsius = conditions.temperature;
+        var metric = (System.getDeviceSettings().temperatureUnits == System.UNIT_METRIC);
+        var value = metric ? celsius : (celsius * 9.0 / 5.0 + 32.0);
+        return value.format("%d") + "°";
+    }
+
+    // A second timezone as a fixed UTC-offset-in-hours clock (Settings >
+    // World Clock Offset) rather than a real timezone/DST lookup - Monkey C
+    // has no on-device timezone database, so this is the honest version of
+    // that feature: shift the current instant by the configured offset and
+    // read it back as UTC, which is equivalent to reading local time at
+    // that offset. Whole-hour offsets only - the handful of half-hour zones
+    // (India, Nepal, etc) aren't selectable, noted in strings.xml.
+    function worldClockText() as Lang.String {
+        var offsetHours = Properties.getValue("WorldClockOffset") as Lang.Number?;
+        if (offsetHours == null) { offsetHours = 0; }
+        var shifted = Time.now().add(new Time.Duration(offsetHours * 3600));
+        var info = Gregorian.utcInfo(shifted, Time.FORMAT_SHORT);
+        var hour = info.hour;
+        if (!System.getDeviceSettings().is24Hour) {
+            hour = hour % 12;
+            if (hour == 0) { hour = 12; }
+        }
+        return hour.format("%02d") + ":" + info.min.format("%02d");
     }
 
     // Steps shown as e.g. "8.6K" once in the thousands, to keep the number
@@ -335,7 +496,7 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     // of a small badge's height FONT_TINY actually occupies. Switched to
     // TEXT_JUSTIFY_VCENTER (centers on the anchor regardless of actual
     // font height) rather than wait to hit the same bug here too.
-    function drawStatBadge(dc as Graphics.Dc, cx as Lang.Float, cy as Lang.Float, r as Lang.Float, icon as Lang.Symbol, text as Lang.String) as Void {
+    function drawStatBadge(dc as Graphics.Dc, cx as Lang.Float, cy as Lang.Float, r as Lang.Float, fieldId as Lang.Number, text as Lang.String) as Void {
         dc.setColor(0x0d1b26, Graphics.COLOR_TRANSPARENT);
         dc.fillCircle(cx, cy, r);
         dc.setColor(ACCENT, Graphics.COLOR_TRANSPARENT);
@@ -344,16 +505,49 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
 
         var iconSize = r * 0.42;
         var iconTopY = cy - r * 0.62;
-        if (icon == :steps) {
-            Icons.drawSteps(dc, cx - iconSize * 0.5, iconTopY, iconSize, ACCENT);
-        } else if (icon == :heart) {
-            Icons.drawHeart(dc, cx - iconSize * 0.5, iconTopY, iconSize, ACCENT);
-        } else if (icon == :flame) {
-            Icons.drawFlame(dc, cx - iconSize * 0.5, iconTopY, iconSize, ACCENT);
+        var iconX = cx - iconSize * 0.5;
+        if (fieldId == FIELD_HEART) {
+            Icons.drawHeart(dc, iconX, iconTopY, iconSize, ACCENT);
+        } else if (fieldId == FIELD_CALORIES) {
+            Icons.drawFlame(dc, iconX, iconTopY, iconSize, ACCENT);
+        } else if (fieldId == FIELD_DISTANCE) {
+            Icons.drawDistance(dc, iconX, iconTopY, iconSize, ACCENT);
+        } else if (fieldId == FIELD_FLOORS) {
+            Icons.drawFloors(dc, iconX, iconTopY, iconSize, ACCENT);
+        } else if (fieldId == FIELD_ACTIVE_MIN) {
+            Icons.drawActiveMinutes(dc, iconX, iconTopY, iconSize, ACCENT);
+        } else if (fieldId == FIELD_BATTERY) {
+            // drawBattery's box is size x size*0.5 (half-height), unlike
+            // the other icons here - nudge down to stay vertically
+            // centered in the same icon slot instead of hugging the top.
+            var pct = System.getSystemStats().battery;
+            Icons.drawBattery(dc, iconX, iconTopY + iconSize * 0.25, iconSize, pct, ACCENT, ACCENT);
+        } else if (fieldId == FIELD_STRESS) {
+            Icons.drawStress(dc, iconX, iconTopY, iconSize, ACCENT);
+        } else if (fieldId == FIELD_TEMPERATURE) {
+            Icons.drawTemperature(dc, iconX, iconTopY, iconSize, ACCENT);
+        } else if (fieldId == FIELD_WORLD_CLOCK) {
+            Icons.drawWorldClock(dc, iconX, iconTopY, iconSize, ACCENT);
+        } else {
+            Icons.drawSteps(dc, iconX, iconTopY, iconSize, ACCENT);
+        }
+
+        // FIX (carried over from rossonero/milan-personal - same shared
+        // badge code): steps can go well past 3 digits, and once
+        // formatSteps() switches to "12.3K"-style text it's noticeably
+        // wider than a bare "0" or "80" - never checked against how much
+        // horizontal room this small a badge actually has. Measure the
+        // actual rendered width at runtime and drop to a smaller font if
+        // FONT_TINY would run wider than the badge's chord width at this
+        // text row (r * 1.7, leaving a little padding inside the circle).
+        var textFont = Graphics.FONT_TINY;
+        var maxTextWidth = r * 1.7;
+        if (dc.getTextWidthInPixels(text, textFont) > maxTextWidth) {
+            textFont = Graphics.FONT_XTINY;
         }
 
         dc.setColor(FG, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, cy + r * 0.28, Graphics.FONT_TINY, text,
+        dc.drawText(cx, cy + r * 0.28, textFont, text,
             Graphics.TEXT_JUSTIFY_CENTER + Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
@@ -364,7 +558,8 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         var steps = (info.steps != null) ? info.steps : 0;
         var battery = System.getSystemStats().battery;
         var line = steps.format("%d") + " · " + battery.format("%d") + "%";
-        dc.setColor(0x999999, Graphics.COLOR_TRANSPARENT);
+        // Darkened from 0x999999 - same burn-in margin reasoning as above.
+        dc.setColor(0x444444, Graphics.COLOR_TRANSPARENT);
         dc.drawText(w * 0.5, h * STATS_Y, Graphics.FONT_TINY, line, Graphics.TEXT_JUSTIFY_CENTER);
     }
 

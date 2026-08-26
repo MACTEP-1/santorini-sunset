@@ -13,4 +13,51 @@
     <string id="SettingBackground">Background</string>
     <string id="SettingBackgroundPhoto">Photo (your Santorini sunset)</string>
     <string id="SettingBackgroundVector">Vector illustration (lighter on memory)</string>
+
+    <!-- Data field pickers - one per stat-badge circle, same options in
+         each, defaults reproduce the original steps/heart rate/calories
+         layout (see properties.xml). -->
+    <string id="SettingField1">Left circle shows</string>
+    <string id="SettingField2">Middle circle shows</string>
+    <string id="SettingField3">Right circle shows</string>
+
+    <string id="FieldSteps">Steps</string>
+    <string id="FieldHeartRate">Heart rate</string>
+    <string id="FieldCalories">Calories</string>
+    <string id="FieldDistance">Distance (today)</string>
+    <string id="FieldFloors">Floors climbed</string>
+    <string id="FieldActiveMinutes">Active minutes</string>
+    <string id="FieldBattery">Battery</string>
+    <string id="FieldStress">Stress</string>
+    <string id="FieldTemperature">Temperature (needs connected phone)</string>
+    <string id="FieldWorldClock">World clock (see World Clock Offset)</string>
+
+    <string id="SettingWorldClockOffset">World clock offset (whole hours from UTC - only matters if a circle above is set to World Clock)</string>
+    <string id="UtcM12">UTC-12</string>
+    <string id="UtcM11">UTC-11</string>
+    <string id="UtcM10">UTC-10</string>
+    <string id="UtcM9">UTC-9</string>
+    <string id="UtcM8">UTC-8 (Los Angeles)</string>
+    <string id="UtcM7">UTC-7 (Denver)</string>
+    <string id="UtcM6">UTC-6 (Chicago)</string>
+    <string id="UtcM5">UTC-5 (New York)</string>
+    <string id="UtcM4">UTC-4</string>
+    <string id="UtcM3">UTC-3 (Sao Paulo)</string>
+    <string id="UtcM2">UTC-2</string>
+    <string id="UtcM1">UTC-1</string>
+    <string id="Utc0">UTC+0 (London)</string>
+    <string id="UtcP1">UTC+1 (Paris)</string>
+    <string id="UtcP2">UTC+2 (Athens, Santorini)</string>
+    <string id="UtcP3">UTC+3 (Moscow)</string>
+    <string id="UtcP4">UTC+4</string>
+    <string id="UtcP5">UTC+5</string>
+    <string id="UtcP6">UTC+6</string>
+    <string id="UtcP7">UTC+7</string>
+    <string id="UtcP8">UTC+8 (Beijing)</string>
+    <string id="UtcP9">UTC+9 (Tokyo)</string>
+    <string id="UtcP10">UTC+10 (Sydney)</string>
+    <string id="UtcP11">UTC+11</string>
+    <string id="UtcP12">UTC+12 (Auckland)</string>
+    <string id="UtcP13">UTC+13</string>
+    <string id="UtcP14">UTC+14</string>
 </strings>

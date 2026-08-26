@@ -36,9 +36,18 @@
       <iq:product id="fr965"/>
     </iq:products>
 
-    <!-- No permissions needed: no Auto theme/sunrise lookup (this face uses
-         one fixed dusk palette, see strings.xml), no SensorHistory secondary
-         field, no networking. -->
+    <!-- CORRECTED after a real compiler error: "Weather" is NOT a valid
+         permission id - monkeybrains rejected it outright ("Invalid
+         permission provided: Weather"). Turns out no permission is needed
+         at all for Weather.getCurrentConditions() - confirmed against
+         Garmin's Toybox.Weather/CurrentConditions API docs: the only
+         fields gated behind a permission are observationLocationPosition
+         and observationLocationName, which need "Positioning", and
+         temperatureText() (see SantoriniSunsetView.mc) only reads
+         .temperature, which isn't one of those. So the permissions block
+         is removed entirely rather than swapped to a different id. No
+         other permission is needed: no Auto theme/sunrise lookup, no
+         SensorHistory secondary field, no other networking. -->
 
     <iq:languages>
       <iq:language>eng</iq:language>

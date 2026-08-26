@@ -9,4 +9,81 @@
             <listEntry value="1">@Strings.SettingBackgroundVector</listEntry>
         </settingConfig>
     </setting>
+
+    <setting propertyKey="@Properties.Field1" title="@Strings.SettingField1">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.FieldSteps</listEntry>
+            <listEntry value="1">@Strings.FieldHeartRate</listEntry>
+            <listEntry value="2">@Strings.FieldCalories</listEntry>
+            <listEntry value="3">@Strings.FieldDistance</listEntry>
+            <listEntry value="4">@Strings.FieldFloors</listEntry>
+            <listEntry value="5">@Strings.FieldActiveMinutes</listEntry>
+            <listEntry value="6">@Strings.FieldBattery</listEntry>
+            <listEntry value="7">@Strings.FieldStress</listEntry>
+            <listEntry value="8">@Strings.FieldTemperature</listEntry>
+            <listEntry value="9">@Strings.FieldWorldClock</listEntry>
+        </settingConfig>
+    </setting>
+
+    <setting propertyKey="@Properties.Field2" title="@Strings.SettingField2">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.FieldSteps</listEntry>
+            <listEntry value="1">@Strings.FieldHeartRate</listEntry>
+            <listEntry value="2">@Strings.FieldCalories</listEntry>
+            <listEntry value="3">@Strings.FieldDistance</listEntry>
+            <listEntry value="4">@Strings.FieldFloors</listEntry>
+            <listEntry value="5">@Strings.FieldActiveMinutes</listEntry>
+            <listEntry value="6">@Strings.FieldBattery</listEntry>
+            <listEntry value="7">@Strings.FieldStress</listEntry>
+            <listEntry value="8">@Strings.FieldTemperature</listEntry>
+            <listEntry value="9">@Strings.FieldWorldClock</listEntry>
+        </settingConfig>
+    </setting>
+
+    <setting propertyKey="@Properties.Field3" title="@Strings.SettingField3">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.FieldSteps</listEntry>
+            <listEntry value="1">@Strings.FieldHeartRate</listEntry>
+            <listEntry value="2">@Strings.FieldCalories</listEntry>
+            <listEntry value="3">@Strings.FieldDistance</listEntry>
+            <listEntry value="4">@Strings.FieldFloors</listEntry>
+            <listEntry value="5">@Strings.FieldActiveMinutes</listEntry>
+            <listEntry value="6">@Strings.FieldBattery</listEntry>
+            <listEntry value="7">@Strings.FieldStress</listEntry>
+            <listEntry value="8">@Strings.FieldTemperature</listEntry>
+            <listEntry value="9">@Strings.FieldWorldClock</listEntry>
+        </settingConfig>
+    </setting>
+
+    <setting propertyKey="@Properties.WorldClockOffset" title="@Strings.SettingWorldClockOffset">
+        <settingConfig type="list">
+            <listEntry value="-12">@Strings.UtcM12</listEntry>
+            <listEntry value="-11">@Strings.UtcM11</listEntry>
+            <listEntry value="-10">@Strings.UtcM10</listEntry>
+            <listEntry value="-9">@Strings.UtcM9</listEntry>
+            <listEntry value="-8">@Strings.UtcM8</listEntry>
+            <listEntry value="-7">@Strings.UtcM7</listEntry>
+            <listEntry value="-6">@Strings.UtcM6</listEntry>
+            <listEntry value="-5">@Strings.UtcM5</listEntry>
+            <listEntry value="-4">@Strings.UtcM4</listEntry>
+            <listEntry value="-3">@Strings.UtcM3</listEntry>
+            <listEntry value="-2">@Strings.UtcM2</listEntry>
+            <listEntry value="-1">@Strings.UtcM1</listEntry>
+            <listEntry value="0">@Strings.Utc0</listEntry>
+            <listEntry value="1">@Strings.UtcP1</listEntry>
+            <listEntry value="2">@Strings.UtcP2</listEntry>
+            <listEntry value="3">@Strings.UtcP3</listEntry>
+            <listEntry value="4">@Strings.UtcP4</listEntry>
+            <listEntry value="5">@Strings.UtcP5</listEntry>
+            <listEntry value="6">@Strings.UtcP6</listEntry>
+            <listEntry value="7">@Strings.UtcP7</listEntry>
+            <listEntry value="8">@Strings.UtcP8</listEntry>
+            <listEntry value="9">@Strings.UtcP9</listEntry>
+            <listEntry value="10">@Strings.UtcP10</listEntry>
+            <listEntry value="11">@Strings.UtcP11</listEntry>
+            <listEntry value="12">@Strings.UtcP12</listEntry>
+            <listEntry value="13">@Strings.UtcP13</listEntry>
+            <listEntry value="14">@Strings.UtcP14</listEntry>
+        </settingConfig>
+    </setting>
 </settings>
