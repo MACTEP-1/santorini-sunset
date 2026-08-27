@@ -15,6 +15,35 @@ that direction was set. Same caveat as the other projects in this set: I
 simulated device - treat it as a carefully-reasoned first draft, not
 tested software.
 
+## Eleventh fix: nicer analog hands, hour ticks + numbers around the dial
+
+Same request as Rossonero/milan-personal - see `rossonero/README.md`'s
+"Twelfth round" for the full writeup on the tapered hand shape and the
+hour-number ring. This project needed its own version of the ring rather
+than a straight port, for two reasons specific to it: it had no
+perimeter tick ring to begin with (Rossonero/milan-personal already had
+one to reuse), and every mark has to stay legible over your actual photo
+rather than a flat striped background.
+
+Added a plain 12-tick ring (all hours, near the bezel) plus the numbers
+1-11 at a slightly smaller radius so the tick marks and number glyphs
+don't draw on top of each other - checked against the actual
+`resources/drawables/bg_photo.png`, not just assumed, since a flat color
+ring wouldn't stay readable against sky, sea, and the windmill
+silhouette in the same way it would against Rossonero's stripes. Reused
+the same black-shadow-then-bright-text technique the date row's fix
+already established earlier this session (a 1px-offset dark copy drawn
+first, then the real color on top) for both the tick lines and the
+numbers, rather than picking one "safe" flat color and hoping it holds
+up everywhere the ring passes over the photo. Skips "12" for the same
+reason as the other two projects: the top icon already marks that spot.
+
+Awake-only, like the rest of this project's decorative layers - the
+photo is already replaced by solid black when asleep for the burn-in
+fix, so there's no photo-contrast problem then, but a lit 12-mark ring
+plus 11 numerals would still cost more of the AMOLED luminance budget
+than this project can spare.
+
 ## Tenth fix: an analog clock style option
 
 You asked whether an analog watch option could be added to all three

@@ -56,6 +56,24 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     // scene - see Icons.drawSantoriniScene.
     const BG_DOME = 0x8cc3aa;
 
+    // Hour ticks + numbers ring for Analog clock style (Settings > Clock
+    // Style). Rossonero/milan-personal already had a decorative perimeter
+    // tick ring to build on; this project has none, so this adds a plain
+    // 12-mark ring instead of reusing an existing one. Two separate radii
+    // (ticks nearer the bezel, numbers a bit further in) rather than one
+    // shared radius - putting both at the same distance made the number
+    // glyphs and the tick marks draw right on top of each other in an
+    // early version of the mockup. Checked against the actual
+    // resources/drawables/bg_photo.png (not just guessed) with the same
+    // black-shadow-then-FG-text technique drawDate() already uses for
+    // this exact "flat color can't win against every part of a photo"
+    // problem - reads clearly across sky/sea/windmill in the rendered
+    // check. Skips "12" - the top icon marks that spot instead, same
+    // reasoning as the other two projects.
+    const HOUR_NUM_RADIUS = 0.46;
+    const HOUR_TICK_OUTER_RADIUS = 0.485;
+    const HOUR_TICK_LEN = 0.03;
+
     // Selectable stat-badge fields - numeric IDs match the Field1/Field2/
     // Field3 settings.xml list values exactly, so don't renumber these
     // without updating settings.xml/strings.xml to match.
@@ -417,26 +435,90 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         var fgColor = awake ? FG : 0x666666;
         var accentColor = awake ? ACCENT : 0x555555;
 
+        // Awake-only: the photo itself is already swapped for solid black
+        // when asleep (see draw()'s burn-in fix), so there's no photo-
+        // contrast problem then, but 11 more lit numerals plus a 12-mark
+        // ring would still cost more of the AMOLED luminance budget than
+        // this project can spare, matching its existing "decoration is
+        // awake-only" pattern (top icon, date shadow, etc).
+        if (awake) {
+            drawAnalogDialMarks(dc, w, h);
+        }
+
         dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(4);
-        drawClockHand(dc, cx, cy, hourAngle, hourLen);
+        drawHandPolygon(dc, cx, cy, hourAngle, hourLen, w * 0.022, hourLen * 0.18);
 
         dc.setColor(accentColor, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(3);
-        drawClockHand(dc, cx, cy, minuteAngle, minLen);
+        drawHandPolygon(dc, cx, cy, minuteAngle, minLen, w * 0.015, minLen * 0.15);
 
-        dc.fillCircle(cx, cy, w * 0.015);
+        dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(cx, cy, w * 0.022);
+        dc.setColor(accentColor, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(2);
+        dc.drawCircle(cx, cy, w * 0.022);
     }
 
-    // angleDeg is clockwise degrees from 12 o'clock (0 = straight up),
-    // matching how clock hands are conventionally described - converted
-    // here to screen coordinates (0deg => negative-y/up, 90deg => positive-
-    // x/right).
-    function drawClockHand(dc as Graphics.Dc, cx as Lang.Float, cy as Lang.Float, angleDeg as Lang.Float, length as Lang.Float) as Void {
+    // 12 tick marks (all hours) plus the numbers 1-11, each drawn with a
+    // 1px-offset black shadow copy first, exactly like drawDate()'s fix
+    // above - a flat color can't stay legible across every part of a
+    // photo (bright sky, dark sea, the windmill silhouette all pass
+    // through this ring depending on the time of day), so a dark halo
+    // behind bright FG is used instead of picking one "safe" color.
+    function drawAnalogDialMarks(dc as Graphics.Dc, w as Lang.Number, h as Lang.Number) as Void {
+        var cx = w * 0.5;
+        var cy = h * 0.5;
+        var rNum = w * HOUR_NUM_RADIUS;
+        var rOuter = w * HOUR_TICK_OUTER_RADIUS;
+        var rInner = w * (HOUR_TICK_OUTER_RADIUS - HOUR_TICK_LEN);
+
+        var n = 1;
+        while (n <= 12) {
+            var rad = Math.toRadians(n * 30.0);
+            var sinA = Math.sin(rad);
+            var cosA = Math.cos(rad);
+
+            var outerX = cx + rOuter * sinA;
+            var outerY = cy - rOuter * cosA;
+            var innerX = cx + rInner * sinA;
+            var innerY = cy - rInner * cosA;
+
+            dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+            dc.setPenWidth(4);
+            dc.drawLine(innerX + 1, innerY + 1, outerX + 1, outerY + 1);
+            dc.setColor(FG, Graphics.COLOR_TRANSPARENT);
+            dc.setPenWidth(2);
+            dc.drawLine(innerX, innerY, outerX, outerY);
+
+            if (n != 12) {
+                var numX = cx + rNum * sinA;
+                var numY = cy - rNum * cosA;
+                var label = n.format("%d");
+                dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(numX + 1, numY + 1, Graphics.FONT_XTINY, label,
+                    Graphics.TEXT_JUSTIFY_CENTER + Graphics.TEXT_JUSTIFY_VCENTER);
+                dc.setColor(FG, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(numX, numY, Graphics.FONT_XTINY, label,
+                    Graphics.TEXT_JUSTIFY_CENTER + Graphics.TEXT_JUSTIFY_VCENTER);
+            }
+            n += 1;
+        }
+    }
+
+    // Tapered "dauphine"-style hand - see Rossonero's comment on this
+    // same function for the full reasoning; identical implementation.
+    function drawHandPolygon(dc as Graphics.Dc, cx as Lang.Float, cy as Lang.Float, angleDeg as Lang.Float, length as Lang.Float, halfWidth as Lang.Float, tailLen as Lang.Float) as Void {
         var rad = Math.toRadians(angleDeg);
-        var x = cx + length * Math.sin(rad);
-        var y = cy - length * Math.cos(rad);
-        dc.drawLine(cx, cy, x, y);
+        var dirX = Math.sin(rad);
+        var dirY = -Math.cos(rad);
+        var perpX = Math.cos(rad);
+        var perpY = Math.sin(rad);
+
+        var tip = [cx + dirX * length, cy + dirY * length];
+        var baseLeft = [cx + perpX * halfWidth, cy + perpY * halfWidth];
+        var baseRight = [cx - perpX * halfWidth, cy - perpY * halfWidth];
+        var tail = [cx - dirX * tailLen, cy - dirY * tailLen];
+
+        dc.fillPolygon([baseLeft, tip, baseRight, tail]);
     }
 
     // ---- Stats: user-selectable badges (Settings > Field 1/2/3) -----------
