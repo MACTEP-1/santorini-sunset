@@ -17,10 +17,14 @@ class SantoriniSunsetApp extends Application.AppBase {
         WatchUi.requestUpdate();
     }
     // On-device "Customize" settings (hold the button in watch-face
-    // selection mode) - see SettingsMenu.mc for the full explanation.
+    // selection mode) - see shared-src/SettingsMenu.mc for the full
+    // explanation. SettingsMenu/SettingsDelegate now come from that
+    // shared file (via monkey.jungle's sourcePath), not a per-project
+    // class - class names dropped their "SantoriniSunset" prefix
+    // accordingly.
     // Only applies to watch faces/data fields, which this is.
     function getSettingsView() as [ WatchUi.Views ] or [ WatchUi.Views, WatchUi.InputDelegates ] or Null {
-        return [ new SantoriniSunsetSettingsMenu(), new SantoriniSunsetSettingsDelegate() ];
+        return [ new SettingsMenu(), new SettingsDelegate() ];
     }
 }
 function getApp() as SantoriniSunsetApp {

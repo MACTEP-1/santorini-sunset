@@ -15,6 +15,19 @@ that direction was set. Same caveat as the other projects in this set: I
 simulated device - treat it as a carefully-reasoned first draft, not
 tested software.
 
+## Twelfth fix: SettingsMenu.mc moved to a shared source folder
+
+Same change as Rossonero and milan-personal - see `rossonero/README.md`'s
+"Thirteenth round" entry for the full reasoning (this project's version
+of the same fix; numbered "Twelfth" here to match this project's own
+fix-count, one behind the other two since this file uses "fix" not
+"round"). `source/SettingsMenu.mc` is gone from this project; it now
+lives in `garmin/shared-src/SettingsMenu.mc` and is pulled in via
+`monkey.jungle`'s `base.sourcePath = source;../shared-src`.
+`SantoriniSunsetApp.mc`'s `getSettingsView()` now uses the shared,
+unprefixed `SettingsMenu`/`SettingsDelegate` classes. Edit the shared
+copy, not a per-project one, for any future settings-menu change.
+
 ## Eleventh fix: nicer analog hands, hour ticks + numbers around the dial
 
 Same request as Rossonero/milan-personal - see `rossonero/README.md`'s
@@ -410,4 +423,9 @@ source/
   SantoriniSunsetApp.mc      App entry point
   SantoriniSunsetView.mc     All drawing logic (photo + vector backgrounds)
   Icons.mc                   Small vector icons (steps/heart/flame/battery/windmill)
+
+../shared-src/                (sibling folder, NOT inside this project)
+  SettingsMenu.mc             On-device Customize menu - shared with
+                               rossonero and milan-personal, see
+                               "Twelfth fix" above.
 ```
