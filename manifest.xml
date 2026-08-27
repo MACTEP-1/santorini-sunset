@@ -14,29 +14,20 @@
   your installed SDK.
 -->
 <iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
-  <iq:application
-    id="8eb35071-3151-4f55-9fb1-06664f01f526"
-    type="watchface"
-    name="@Strings.AppName"
-    entry="SantoriniSunsetApp"
-    launcherIcon="@Drawables.LauncherIcon"
-    minApiLevel="4.0.0">
-
-    <iq:products>
-      <iq:product id="venu2"/>
-      <iq:product id="venu2s"/>
-      <iq:product id="vivoactive4"/>
-      <iq:product id="vivoactive5"/>
-      <iq:product id="fenix7"/>
-      <iq:product id="fenix7s"/>
-      <iq:product id="fenix7x"/>
-      <iq:product id="epix2"/>
-      <iq:product id="fr265"/>
-      <iq:product id="fr265s"/>
-      <iq:product id="fr965"/>
-    </iq:products>
-
-    <!-- CORRECTED after a real compiler error: "Weather" is NOT a valid
+    <iq:application id="8eb35071-3151-4f55-9fb1-06664f01f526" type="watchface" name="@Strings.AppName" entry="SantoriniSunsetApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="4.0.0">
+        <iq:products>
+            <iq:product id="epix2"/>
+            <iq:product id="fenix7"/>
+            <iq:product id="fenix7s"/>
+            <iq:product id="fenix7x"/>
+            <iq:product id="fr265"/>
+            <iq:product id="fr265s"/>
+            <iq:product id="fr965"/>
+            <iq:product id="venu2"/>
+            <iq:product id="venu2s"/>
+            <iq:product id="vivoactive5"/>
+        </iq:products>
+        <!-- CORRECTED after a real compiler error: "Weather" is NOT a valid
          permission id - monkeybrains rejected it outright ("Invalid
          permission provided: Weather"). Turns out no permission is needed
          at all for Weather.getCurrentConditions() - confirmed against
@@ -48,11 +39,10 @@
          is removed entirely rather than swapped to a different id. No
          other permission is needed: no Auto theme/sunrise lookup, no
          SensorHistory secondary field, no other networking. -->
-
-    <iq:languages>
-      <iq:language>eng</iq:language>
-    </iq:languages>
-
-    <iq:barrels/>
-  </iq:application>
+        <iq:languages>
+            <iq:language>eng</iq:language>
+        </iq:languages>
+        <iq:barrels/>
+        <iq:permissions/>
+    </iq:application>
 </iq:manifest>

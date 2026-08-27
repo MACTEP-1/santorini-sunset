@@ -38,6 +38,7 @@ class SantoriniSunsetSettingsMenu extends WatchUi.Menu2 {
         addItem(new WatchUi.MenuItem("Middle circle", currentFieldLabel("Field2", 1), :field2, {}));
         addItem(new WatchUi.MenuItem("Right circle", currentFieldLabel("Field3", 2), :field3, {}));
         addItem(new WatchUi.MenuItem("World clock offset", currentWorldClockLabel(), :worldClock, {}));
+        addItem(new WatchUi.MenuItem(Rez.Strings.SettingClockStyle, currentClockStyleLabel(), :clockStyle, {}));
     }
 }
 
@@ -56,6 +57,8 @@ class SantoriniSunsetSettingsDelegate extends WatchUi.Menu2InputDelegate {
             pushFieldPicker(item, "Field3");
         } else if (id.equals(:worldClock)) {
             pushWorldClockPicker(item);
+        } else if (id.equals(:clockStyle)) {
+            pushClockStylePicker(item);
         }
     }
 
@@ -93,6 +96,16 @@ class SantoriniSunsetSettingsDelegate extends WatchUi.Menu2InputDelegate {
         }
         WatchUi.pushView(menu, new SantoriniSunsetWorldClockPickerDelegate(parentItem), WatchUi.SLIDE_IMMEDIATE);
     }
+
+    // Digital (the original hour:minute readout) vs Analog (hour/minute
+    // hands from screen center) - see SantoriniSunsetView.mc's drawAnalogTime()
+    // for the design tradeoffs of the analog option.
+    function pushClockStylePicker(parentItem as WatchUi.MenuItem) as Void {
+        var menu = new WatchUi.Menu2({:title => parentItem.getLabel()});
+        menu.addItem(new WatchUi.MenuItem(Rez.Strings.ClockStyleDigital, null, 0, {}));
+        menu.addItem(new WatchUi.MenuItem(Rez.Strings.ClockStyleAnalog, null, 1, {}));
+        WatchUi.pushView(menu, new SantoriniSunsetClockStylePickerDelegate(parentItem), WatchUi.SLIDE_IMMEDIATE);
+    }
 }
 
 class SantoriniSunsetFieldPickerDelegate extends WatchUi.Menu2InputDelegate {
@@ -126,6 +139,23 @@ class SantoriniSunsetWorldClockPickerDelegate extends WatchUi.Menu2InputDelegate
         var offset = item.getId() as Lang.Number;
         Properties.setValue("WorldClockOffset", offset);
         _parentItem.setSubLabel(utcLabel(offset));
+        WatchUi.requestUpdate();
+        WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+    }
+}
+
+class SantoriniSunsetClockStylePickerDelegate extends WatchUi.Menu2InputDelegate {
+    private var _parentItem as WatchUi.MenuItem;
+
+    function initialize(parentItem as WatchUi.MenuItem) {
+        Menu2InputDelegate.initialize();
+        _parentItem = parentItem;
+    }
+
+    function onSelect(item as WatchUi.MenuItem) as Void {
+        var style = item.getId() as Lang.Number;
+        Properties.setValue("ClockStyle", style);
+        _parentItem.setSubLabel(clockStyleLabelText(style));
         WatchUi.requestUpdate();
         WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
     }
@@ -176,4 +206,17 @@ function utcLabel(offset as Lang.Number) as Lang.String {
         return "UTC" + offset.format("%d");
     }
     return "UTC+0";
+}
+
+function currentClockStyleLabel() as Lang.String {
+    var style = Properties.getValue("ClockStyle") as Lang.Number?;
+    if (style == null) { style = 0; }
+    return clockStyleLabelText(style);
+}
+
+function clockStyleLabelText(style as Lang.Number) as Lang.String {
+    if (style == 1) {
+        return WatchUi.loadResource(Rez.Strings.ClockStyleAnalog) as Lang.String;
+    }
+    return WatchUi.loadResource(Rez.Strings.ClockStyleDigital) as Lang.String;
 }

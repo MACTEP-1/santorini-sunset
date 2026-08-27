@@ -86,4 +86,11 @@
             <listEntry value="14">@Strings.UtcP14</listEntry>
         </settingConfig>
     </setting>
+
+    <setting propertyKey="@Properties.ClockStyle" title="@Strings.SettingClockStyle">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.ClockStyleDigital</listEntry>
+            <listEntry value="1">@Strings.ClockStyleAnalog</listEntry>
+        </settingConfig>
+    </setting>
 </settings>

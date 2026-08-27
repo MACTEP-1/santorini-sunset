@@ -15,6 +15,38 @@ that direction was set. Same caveat as the other projects in this set: I
 simulated device - treat it as a carefully-reasoned first draft, not
 tested software.
 
+## Tenth fix: an analog clock style option
+
+You asked whether an analog watch option could be added to all three
+projects. Scoped this deliberately narrow when asked: only the time
+element itself switches (new Settings > Clock Style: Digital/Analog) -
+the top icon, date row, 3 stat badges, and battery readout all stay
+exactly where they are. Hour and minute hands only, no seconds hand -
+your call, and it also means this needed zero new burn-in consideration:
+no extra per-second redraw, awake or asleep.
+
+The hands pivot from the screen's true center, not from `TIME_Y` where
+the digital text sits (offset upward to leave room for the badges below
+it), so an analog clock centered there can visually cross near the date,
+top icon, or badges depending on the time of day - and, on this project
+specifically, near whatever part of your photo happens to sit behind it.
+You picked the smaller, isolated change over redesigning the whole layout
+around a bigger analog face, so that's an accepted tradeoff.
+
+Reused this project's own dimmed asleep colors (`0x666666`/`0x555555`,
+already tuned for the burn-in luminance fix earlier this session) for the
+hands rather than picking new numbers - same values, same AMOLED margin.
+
+Verified the hand-angle math itself (which way is "12 o'clock," does the
+hour hand creep correctly between hour marks) with a Python/PIL render at
+five test times before writing the Monkey C - see `rossonero/README.md`'s
+"Eleventh round" entry for the details, since this was implemented once
+and ported to all three.
+
+Also added to the on-device Customize menu (5th item, "Clock style") for
+the same reason the rest of that menu exists - test it without needing
+the phone-based Settings path.
+
 ## Ninth fix: on-device "Customize" settings, no phone needed
 
 You noticed some of your other installed watch faces show a gear icon/

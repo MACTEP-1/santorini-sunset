@@ -60,4 +60,8 @@
     <string id="UtcP12">UTC+12 (Auckland)</string>
     <string id="UtcP13">UTC+13</string>
     <string id="UtcP14">UTC+14</string>
+
+    <string id="SettingClockStyle">Clock style</string>
+    <string id="ClockStyleDigital">Digital</string>
+    <string id="ClockStyleAnalog">Analog (hour/minute hands)</string>
 </strings>

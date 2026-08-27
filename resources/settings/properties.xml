@@ -19,4 +19,9 @@
          Tokyo/UTC+9, -5 for New York (standard time). Only matters if a
          circle is actually set to World Clock. -->
     <property id="WorldClockOffset" type="number">0</property>
+
+    <!-- 0=Digital (the original hour:minute readout), 1=Analog (hour/
+         minute hands from screen center). Default 0 keeps existing
+         installs unchanged until the user opens Settings. -->
+    <property id="ClockStyle" type="number">0</property>
 </properties>
