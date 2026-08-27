@@ -9,6 +9,8 @@ using Toybox.Application.Properties;
 using Toybox.Timer;
 using Toybox.Math;
 using Toybox.Weather;
+using Toybox.Activity;
+using Toybox.Position;
 
 //
 // SantoriniSunsetView.mc - draws the whole watch face.
@@ -49,6 +51,12 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     const STATS_SPACING = 0.24; // center-to-center
     const BATTERY_Y = 0.875;
 
+    // Left/right badges lifted a little relative to the middle one, so
+    // the row echoes the round bezel instead of a flat line across it -
+    // see Rossonero's comment on this same constant for the full
+    // reasoning and how 0.035 was picked.
+    const STATS_OUTER_LIFT = 0.035;
+
     const FG = 0xf2f6f8;
     const DIM = 0xc9d6dd;
     const ACCENT = 0x5fb3e0;
@@ -87,6 +95,25 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     const FIELD_STRESS = 7;
     const FIELD_TEMPERATURE = 8;
     const FIELD_WORLD_CLOCK = 9;
+    // Added in the "second hand / move bar / sunrise-sunset / step ring"
+    // round - see Rossonero's comment on these same constants for the full
+    // reasoning. Sunrise/sunset land especially fittingly on this project
+    // given its name, though see sunriseText()/sunsetText() below for why
+    // it's also the least certain thing added this round.
+    const FIELD_MOVE_BAR = 10;
+    const FIELD_SUNRISE = 11;
+    const FIELD_SUNSET = 12;
+
+    // Steps-progress ring - Digital clock style only, see Rossonero's
+    // comment on these same constants for the full reasoning. TRACK is a
+    // cooler dark tone than Rossonero/milan-personal's to sit better
+    // against this project's blue-toned dusk photo rather than their warm
+    // near-black red.
+    const STEP_RING_RADIUS = 0.43;
+    const STEP_RING_TICK_LEN = 0.024;
+    const STEP_RING_SEGMENTS = 32;
+    const STEP_RING_GREEN = 0x3ddc84;
+    const STEP_RING_TRACK = 0x16323e;
 
     function initialize() {
         WatchFace.initialize();
@@ -180,6 +207,7 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         if (awake) {
             drawStats(dc, w, h);
             drawBattery(dc, w, h);
+            drawStepRing(dc, w, h);
         } else {
             drawLowPowerStats(dc, w, h);
         }
@@ -213,81 +241,149 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         dc.drawScaledBitmap(0, 0, w, h, _bgPhoto);
     }
 
-    // ---- Vector fallback: procedural twilight mountain scene --------------
+    // ---- Vector fallback: procedural Santorini sunset scene ---------------
     //
-    // Layered polygons (back range lighter/hazier, front range darker/
-    // sharper, a snow-cap highlight, a water strip, a few tree silhouettes).
-    // This was the original background before you supplied the actual
-    // photo - kept as the lighter-weight "Vector illustration" setting
-    // option (no image resource, smaller memory footprint - see the
-    // Venu 2 CIQ4 watch-face app-memory research in README.md). All
+    // REPLACED entirely this round - you flagged that the original vector
+    // fallback (layered mountain ranges, a snow cap, pine trees) "looks
+    // nothing like the photo," which is a fair, literal description: it was
+    // a generic alpine scene, not Santorini. This version is built from
+    // pixel values actually sampled from resources/drawables/bg_photo.png
+    // (not eyeballed) - sky/sea band colors, the sun's real x-position
+    // (~0.35w, the brightest column in a horizontal scan at the horizon
+    // row), and the dark windmill silhouette's real horizontal span
+    // (~0.75-0.93w, confirmed as the darkest block in that same scan). Same
+    // "solid color bands fake a gradient" technique the original used (no
+    // native gradient fill in this API), just aimed at the right subject -
+    // a sunset sky/sea gradient, a glowing sun low on the horizon, a
+    // windmill silhouette, a dusk-toned building with an arched doorway,
+    // and a terrace railing across the foreground, echoing the actual
+    // photo's composition rather than a stand-in scene. Rendered and
+    // compared side-by-side against the real photo before porting to
+    // Monkey C - see verify/santorini_vector_v2_sidebyside.png. All
     // coordinates are fractions of screen width/height, same convention as
     // the rest of this file - hardcoded (not randomized) so the scene is
     // identical every redraw, no per-frame flicker.
     function drawVectorBackground(dc as Graphics.Dc, w as Lang.Number, h as Lang.Number) as Void {
-        // Sky - four horizontal bands faking a vertical gradient (no native
-        // gradient fill in this API; solid color bands are the cheap
-        // equivalent used elsewhere in Connect IQ watch faces).
-        dc.setColor(0x0a1826, Graphics.COLOR_TRANSPARENT);
-        dc.fillRectangle(0, 0, w, h * 0.45);
-        dc.setColor(0x14304a, Graphics.COLOR_TRANSPARENT);
-        dc.fillRectangle(0, h * 0.45, w, h * 0.20);
-        dc.setColor(0x2f5468, Graphics.COLOR_TRANSPARENT);
-        dc.fillRectangle(0, h * 0.65, w, h * 0.15);
-        dc.setColor(0x4a7fa0, Graphics.COLOR_TRANSPARENT);
-        dc.fillRectangle(0, h * 0.80, w, h * 0.20);
+        // Sky - four bands, cool blue-grey at top down through a warm gold
+        // band where the sun's glow sits, matching the real photo's
+        // vertical color progression.
+        dc.setColor(0x9fb0b0, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(0, 0, w, h * 0.18);
+        dc.setColor(0xc9c2a3, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(0, h * 0.18, w, h * 0.12);
+        dc.setColor(0xe3b478, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(0, h * 0.30, w, h * 0.12);
+        dc.setColor(0xb89478, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(0, h * 0.42, w, h * 0.04);
 
-        // Back mountain range - lighter, hazier, further away.
-        dc.setColor(0x35596d, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon([
-            [0.0 * w, 0.62 * h], [0.15 * w, 0.48 * h], [0.28 * w, 0.57 * h],
-            [0.40 * w, 0.42 * h], [0.52 * w, 0.55 * h], [0.64 * w, 0.44 * h],
-            [0.76 * w, 0.56 * h], [0.90 * w, 0.46 * h], [1.0 * w, 0.60 * h],
-            [1.0 * w, 0.85 * h], [0.0 * w, 0.85 * h]
-        ]);
+        // Sun + glow: 4 closely-stepped rings (not widely-spaced) so each
+        // ring's outer edge stays close to the surrounding band color -
+        // reads as a soft brightening toward the center rather than a
+        // hard-edged target. Centered at the real sampled sun position.
+        var sunX = w * 0.35;
+        var sunY = h * 0.44;
+        dc.setColor(0xe3b980, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(sunX, sunY, w * 0.26);
+        dc.setColor(0xe9c48c, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(sunX, sunY, w * 0.19);
+        dc.setColor(0xf0d09a, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(sunX, sunY, w * 0.13);
+        dc.setColor(0xf8e2b2, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(sunX, sunY, w * 0.07);
 
-        // Front mountain range - darker, sharper, closer.
-        dc.setColor(0x142838, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon([
-            [0.0 * w, 0.70 * h], [0.18 * w, 0.50 * h], [0.30 * w, 0.62 * h],
-            [0.42 * w, 0.38 * h], [0.52 * w, 0.60 * h], [0.64 * w, 0.49 * h],
-            [0.76 * w, 0.64 * h], [0.90 * w, 0.52 * h], [1.0 * w, 0.66 * h],
-            [1.0 * w, 0.95 * h], [0.0 * w, 0.95 * h]
-        ]);
-
-        // Snow cap on the tallest front peak (peak tip at 0.42, 0.38).
-        dc.setColor(0xe8f1f6, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon([
-            [0.395 * w, 0.415 * h], [0.42 * w, 0.38 * h], [0.445 * w, 0.415 * h],
-            [0.43 * w, 0.425 * h], [0.41 * w, 0.425 * h]
-        ]);
-
-        // Water strip at the base, with a couple of faint reflection lines.
-        dc.setColor(0x1c3d4c, Graphics.COLOR_TRANSPARENT);
+        // Sea - hazy grey-blue at the horizon, graduated darker toward the
+        // foreground, same 4-band technique as the sky.
+        dc.setColor(0x8d9092, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(0, h * 0.46, w, h * 0.09);
+        dc.setColor(0x767a7e, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(0, h * 0.55, w, h * 0.15);
+        dc.setColor(0x5c6167, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(0, h * 0.70, w, h * 0.15);
+        dc.setColor(0x454a52, Graphics.COLOR_TRANSPARENT);
         dc.fillRectangle(0, h * 0.85, w, h * 0.15);
-        dc.setColor(0x3f6a80, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(1);
-        dc.drawLine(w * 0.32, h * 0.885, w * 0.68, h * 0.885);
-        dc.drawLine(w * 0.30, h * 0.905, w * 0.70, h * 0.905);
 
-        // Tree silhouettes flanking the lower sides - drawn last so they
-        // sit on top of the mountains/water, below where the time/stats
-        // text and stat badges are drawn (see draw() call order).
-        drawTree(dc, w * 0.11, h * 0.72, w * 0.05);
-        drawTree(dc, w * 0.18, h * 0.75, w * 0.035);
-        drawTree(dc, w * 0.89, h * 0.72, w * 0.045);
-        drawTree(dc, w * 0.82, h * 0.755, w * 0.03);
-    }
+        // Sun's reflection shimmer on the water - a short tapering warm
+        // streak plus two broken dashes fading out below it.
+        dc.setColor(0xc9a878, Graphics.COLOR_TRANSPARENT);
+        dc.fillPolygon([
+            [w * 0.335, h * 0.46], [w * 0.365, h * 0.46], [w * 0.35, h * 0.545]
+        ]);
+        dc.setPenWidth(2);
+        dc.drawLine(w * 0.328, h * 0.485, w * 0.372, h * 0.485);
+        dc.drawLine(w * 0.336, h * 0.515, w * 0.364, h * 0.515);
 
-    // A small stacked-triangle tree silhouette, centered at (cx, baseY),
-    // baseY being where the trunk meets the ground. size scales the whole
-    // tree.
-    function drawTree(dc as Graphics.Dc, cx as Lang.Float, baseY as Lang.Float, size as Lang.Float) as Void {
-        dc.setColor(0x0a1620, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon([[cx - size, baseY - size], [cx + size, baseY - size], [cx, baseY - size * 2.0]]);
-        dc.fillPolygon([[cx - size * 0.8, baseY - size * 1.7], [cx + size * 0.8, baseY - size * 1.7], [cx, baseY - size * 2.7]]);
-        dc.fillPolygon([[cx - size * 0.55, baseY - size * 2.35], [cx + size * 0.55, baseY - size * 2.35], [cx, baseY - size * 3.15]]);
-        dc.fillRectangle(cx - size * 0.08, baseY - size, size * 0.16, size);
+        // A couple of small boat silhouettes on the water, left-of-center.
+        dc.setColor(0x141414, Graphics.COLOR_TRANSPARENT);
+        dc.fillPolygon([
+            [w * 0.155, h * 0.565], [w * 0.205, h * 0.565], [w * 0.197, h * 0.577]
+        ]);
+        dc.fillPolygon([
+            [w * 0.253, h * 0.585], [w * 0.288, h * 0.585], [w * 0.280, h * 0.597]
+        ]);
+
+        // Windmill silhouette, right side - matches the real photo's dark
+        // block (sampled as the darkest column span in a horizontal scan
+        // at the horizon row, roughly 0.75-0.93 of the screen width).
+        var dark = 0x141414;
+        dc.setColor(dark, Graphics.COLOR_TRANSPARENT);
+        var towerTopY = h * 0.42;
+        var towerBaseY = h * 0.63;
+        var towerCx = w * 0.815;
+        var topHalfW = w * 0.035;
+        var baseHalfW = w * 0.055;
+        dc.fillPolygon([
+            [towerCx - topHalfW, towerTopY], [towerCx + topHalfW, towerTopY],
+            [towerCx + baseHalfW, towerBaseY], [towerCx - baseHalfW, towerBaseY]
+        ]);
+        // Conical roof.
+        dc.fillPolygon([
+            [towerCx - topHalfW * 1.3, towerTopY], [towerCx + topHalfW * 1.3, towerTopY],
+            [towerCx, towerTopY - h * 0.045]
+        ]);
+        // Sail blades fanning up-left from a hub near the roof, like the
+        // real windmill's spokes.
+        var hubX = towerCx - topHalfW * 1.1;
+        var hubY = towerTopY + h * 0.01;
+        var bladeLen = w * 0.16;
+        dc.setPenWidth(2);
+        var bladeAngles = [-100.0, -75.0, -50.0, -25.0, 0.0];
+        var i = 0;
+        while (i < bladeAngles.size()) {
+            var rad = Math.toRadians(bladeAngles[i]);
+            var ex = hubX + bladeLen * Math.cos(rad);
+            var ey = hubY + bladeLen * Math.sin(rad);
+            dc.drawLine(hubX, hubY, ex, ey);
+            i += 1;
+        }
+
+        // Foreground building silhouette, bottom-right - dusk-toned rather
+        // than pure black (the real photo's building still catches some
+        // light), with a rounded/arched dark-blue doorway.
+        dc.setColor(0x2a2f38, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(w * 0.80, h * 0.60, w * 0.20, h * 0.25);
+        var doorW = w * 0.045;
+        var doorX = w * 0.855;
+        var doorTop = h * 0.70;
+        var doorH = h * 0.15;
+        dc.setColor(0x16223a, Graphics.COLOR_TRANSPARENT);
+        dc.fillRoundedRectangle(doorX, doorTop, doorW, doorH, doorW * 0.5);
+
+        // Terrace railing across the very bottom, same dark silhouette
+        // tone as the windmill/boats - echoes the real photo's foreground
+        // railing and gives the vector scene a grounded bottom edge
+        // instead of ending mid-sea.
+        dc.setColor(dark, Graphics.COLOR_TRANSPARENT);
+        var railY = h * 0.90;
+        dc.setPenWidth(3);
+        dc.drawLine(0, railY, w, railY);
+        dc.setPenWidth(2);
+        var postX = 0.0;
+        var postGap = w * 0.045;
+        while (postX <= w) {
+            dc.drawLine(postX, railY - h * 0.045, postX, railY);
+            postX += postGap;
+        }
+        dc.fillRectangle(0, railY, w, h - railY);
     }
 
     // ---- Top icon + date -------------------------------------------------
@@ -451,6 +547,34 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         dc.setColor(accentColor, Graphics.COLOR_TRANSPARENT);
         drawHandPolygon(dc, cx, cy, minuteAngle, minLen, w * 0.015, minLen * 0.15);
 
+        // Seconds hand - same design as Rossonero's (reuses this project's
+        // own 1Hz _tickTimer), but WITH the black-shadow-then-FG technique
+        // drawAnalogDialMarks()/drawDate() already use, unlike the hour/
+        // minute hands just above. Those two are thick enough (halfWidth
+        // 0.022/0.015) to stay legible against the photo on their own
+        // already-shipped without a shadow; this hand is much thinner
+        // (0.006) to look distinctly different from them, and a line that
+        // thin is exactly the kind of element that disappeared against the
+        // photo before the shadow technique was added for the tick ring/
+        // numbers - not shipping it unprotected here just because the
+        // other two hands happen to get away without one.
+        if (awake) {
+            var secAngle = clockTime.sec * 6.0;
+            var secLen = w * 0.34;
+            var secRad = Math.toRadians(secAngle);
+            dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+            drawHandPolygon(dc, cx + 1, cy + 1, secAngle, secLen, w * 0.006, secLen * 0.25);
+            dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
+            drawHandPolygon(dc, cx, cy, secAngle, secLen, w * 0.006, secLen * 0.25);
+
+            var tailX = cx - Math.sin(secRad) * secLen * 0.25;
+            var tailY = cy + Math.cos(secRad) * secLen * 0.25;
+            dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+            dc.fillCircle(tailX + 1, tailY + 1, w * 0.012);
+            dc.setColor(accentColor, Graphics.COLOR_TRANSPARENT);
+            dc.fillCircle(tailX, tailY, w * 0.012);
+        }
+
         dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
         dc.fillCircle(cx, cy, w * 0.022);
         dc.setColor(accentColor, Graphics.COLOR_TRANSPARENT);
@@ -538,13 +662,14 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         if (field3 == null) { field3 = FIELD_CALORIES; }
 
         var cy = h * STATS_Y;
+        var cyOuter = cy - h * STATS_OUTER_LIFT;
         var r = w * STATS_RADIUS;
         var spacing = w * STATS_SPACING;
         var cxMid = w * 0.5;
 
-        drawStatBadge(dc, cxMid - spacing, cy, r, field1, fieldText(field1, info));
+        drawStatBadge(dc, cxMid - spacing, cyOuter, r, field1, fieldText(field1, info));
         drawStatBadge(dc, cxMid, cy, r, field2, fieldText(field2, info));
-        drawStatBadge(dc, cxMid + spacing, cy, r, field3, fieldText(field3, info));
+        drawStatBadge(dc, cxMid + spacing, cyOuter, r, field3, fieldText(field3, info));
     }
 
     // Text for one FIELD_* id. info is the shared ActivityMonitor.getInfo()
@@ -584,10 +709,128 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
             return temperatureText();
         } else if (fieldId == FIELD_WORLD_CLOCK) {
             return worldClockText();
+        } else if (fieldId == FIELD_MOVE_BAR) {
+            return moveBarText(info);
+        } else if (fieldId == FIELD_SUNRISE) {
+            return sunriseText();
+        } else if (fieldId == FIELD_SUNSET) {
+            return sunsetText();
         }
         // FIELD_STEPS, and the fallback for any unrecognized value.
         var steps = (info.steps != null) ? info.steps : 0;
         return formatSteps(steps);
+    }
+
+    // See Rossonero's comment on this same function for the full reasoning;
+    // identical implementation.
+    function moveBarText(info as ActivityMonitor.Info) as Lang.String {
+        var level = (info.moveBarLevel != null) ? info.moveBarLevel : 0;
+        return level.format("%d") + "/5";
+    }
+
+    // See Rossonero's comment on this same function for the full reasoning;
+    // identical implementation.
+    function sunLocation() as Position.Location? {
+        if ((Toybox has :Activity) && (Activity has :getActivityInfo)) {
+            var actInfo = Activity.getActivityInfo();
+            if (actInfo != null && actInfo.currentLocation != null) {
+                return actInfo.currentLocation;
+            }
+        }
+        if (Toybox has :Weather) {
+            var conditions = Weather.getCurrentConditions();
+            if (conditions != null && conditions.observationLocationPosition != null) {
+                return conditions.observationLocationPosition;
+            }
+        }
+        return null;
+    }
+
+    // See Rossonero's comment on these same functions for the full
+    // reasoning (least field-tested part of this round); identical
+    // implementation.
+    function sunriseText() as Lang.String {
+        var loc = sunLocation();
+        if (loc == null || !(Toybox has :Weather) || !(Weather has :getSunrise)) {
+            return "--";
+        }
+        var moment = Weather.getSunrise(loc, Time.now());
+        return sunMomentText(moment);
+    }
+
+    function sunsetText() as Lang.String {
+        var loc = sunLocation();
+        if (loc == null || !(Toybox has :Weather) || !(Weather has :getSunset)) {
+            return "--";
+        }
+        var moment = Weather.getSunset(loc, Time.now());
+        return sunMomentText(moment);
+    }
+
+    function sunMomentText(moment as Time.Moment?) as Lang.String {
+        if (moment == null) {
+            return "--";
+        }
+        var info = Gregorian.info(moment, Time.FORMAT_SHORT);
+        var hour = info.hour;
+        if (!System.getDeviceSettings().is24Hour) {
+            hour = hour % 12;
+            if (hour == 0) { hour = 12; }
+        }
+        return hour.format("%02d") + ":" + info.min.format("%02d");
+    }
+
+    // Steps-progress ring, same trig/design as Rossonero's - see that
+    // project's comment on this same function for the full reasoning. WITH
+    // the black-shadow-then-color technique (same reason as the seconds
+    // hand above): this ring draws over the same photo/vector background
+    // as drawAnalogDialMarks(), and it's thin ticks, exactly the shape
+    // that needed the shadow fix there too.
+    function drawStepRing(dc as Graphics.Dc, w as Lang.Number, h as Lang.Number) as Void {
+        var clockStyle = Properties.getValue("ClockStyle") as Lang.Number?;
+        if (clockStyle != null && clockStyle == 1) {
+            return;
+        }
+        var showRing = Properties.getValue("ShowStepRing") as Lang.Boolean?;
+        if (showRing != null && !showRing) {
+            return;
+        }
+
+        var info = ActivityMonitor.getInfo();
+        var goal = (info.stepGoal != null) ? info.stepGoal : 0;
+        if (goal <= 0) {
+            return;
+        }
+        var steps = (info.steps != null) ? info.steps : 0;
+        var progress = steps.toFloat() / goal;
+        if (progress > 1.0) { progress = 1.0; }
+
+        var cx = w * 0.5;
+        var cy = h * 0.5;
+        var r = w * STEP_RING_RADIUS;
+        var tickLen = w * STEP_RING_TICK_LEN;
+
+        var i = 0;
+        while (i < STEP_RING_SEGMENTS) {
+            var angleDeg = i * (360.0 / STEP_RING_SEGMENTS);
+            var filled = (i.toFloat() / STEP_RING_SEGMENTS) <= progress;
+            var rad = Math.toRadians(angleDeg);
+            var dirX = Math.sin(rad);
+            var dirY = -Math.cos(rad);
+            var outerX = cx + dirX * r;
+            var outerY = cy + dirY * r;
+            var innerX = cx + dirX * (r - tickLen);
+            var innerY = cy + dirY * (r - tickLen);
+
+            dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+            dc.setPenWidth(filled ? 4 : 3);
+            dc.drawLine(innerX + 1, innerY + 1, outerX + 1, outerY + 1);
+
+            dc.setColor(filled ? STEP_RING_GREEN : STEP_RING_TRACK, Graphics.COLOR_TRANSPARENT);
+            dc.setPenWidth(filled ? 3 : 2);
+            dc.drawLine(innerX, innerY, outerX, outerY);
+            i += 1;
+        }
     }
 
     // Ambient temperature via the connected phone's weather data - NOT a
@@ -676,6 +919,14 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
             Icons.drawTemperature(dc, iconX, iconTopY, iconSize, ACCENT);
         } else if (fieldId == FIELD_WORLD_CLOCK) {
             Icons.drawWorldClock(dc, iconX, iconTopY, iconSize, ACCENT);
+        } else if (fieldId == FIELD_MOVE_BAR) {
+            var info2 = ActivityMonitor.getInfo();
+            var level = (info2.moveBarLevel != null) ? info2.moveBarLevel : 0;
+            Icons.drawMoveBar(dc, iconX, iconTopY, iconSize, level, ACCENT);
+        } else if (fieldId == FIELD_SUNRISE) {
+            Icons.drawSunrise(dc, iconX, iconTopY, iconSize, ACCENT);
+        } else if (fieldId == FIELD_SUNSET) {
+            Icons.drawSunset(dc, iconX, iconTopY, iconSize, ACCENT);
         } else {
             Icons.drawSteps(dc, iconX, iconTopY, iconSize, ACCENT);
         }

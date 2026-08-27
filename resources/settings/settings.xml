@@ -22,6 +22,9 @@
             <listEntry value="7">@Strings.FieldStress</listEntry>
             <listEntry value="8">@Strings.FieldTemperature</listEntry>
             <listEntry value="9">@Strings.FieldWorldClock</listEntry>
+            <listEntry value="10">@Strings.FieldMoveBar</listEntry>
+            <listEntry value="11">@Strings.FieldSunrise</listEntry>
+            <listEntry value="12">@Strings.FieldSunset</listEntry>
         </settingConfig>
     </setting>
 
@@ -37,6 +40,9 @@
             <listEntry value="7">@Strings.FieldStress</listEntry>
             <listEntry value="8">@Strings.FieldTemperature</listEntry>
             <listEntry value="9">@Strings.FieldWorldClock</listEntry>
+            <listEntry value="10">@Strings.FieldMoveBar</listEntry>
+            <listEntry value="11">@Strings.FieldSunrise</listEntry>
+            <listEntry value="12">@Strings.FieldSunset</listEntry>
         </settingConfig>
     </setting>
 
@@ -52,6 +58,9 @@
             <listEntry value="7">@Strings.FieldStress</listEntry>
             <listEntry value="8">@Strings.FieldTemperature</listEntry>
             <listEntry value="9">@Strings.FieldWorldClock</listEntry>
+            <listEntry value="10">@Strings.FieldMoveBar</listEntry>
+            <listEntry value="11">@Strings.FieldSunrise</listEntry>
+            <listEntry value="12">@Strings.FieldSunset</listEntry>
         </settingConfig>
     </setting>
 
@@ -92,5 +101,9 @@
             <listEntry value="0">@Strings.ClockStyleDigital</listEntry>
             <listEntry value="1">@Strings.ClockStyleAnalog</listEntry>
         </settingConfig>
+    </setting>
+
+    <setting propertyKey="@Properties.ShowStepRing" title="@Strings.SettingShowStepRing">
+        <settingConfig type="boolean"/>
     </setting>
 </settings>

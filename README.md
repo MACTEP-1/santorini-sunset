@@ -4,8 +4,9 @@ A Garmin watch face built around your own Santorini sunset photo - a
 small windmill glyph and date at the top, a large two-tone time readout
 (hour white, minute/colon blue), three stat badges (steps, heart rate,
 calories) sitting near the bottom, and a small battery readout. A
-procedural vector mountain-scene illustration is available as a
-lighter-weight alternative background via the "Background" setting.
+procedural vector illustration of the same sunset/windmill scene is
+available as a lighter-weight alternative background via the
+"Background" setting.
 
 This project started as "Arctic Peak" (a generic vector mountain scene)
 before you sent your actual Santorini photo and asked for the theme
@@ -14,6 +15,94 @@ that direction was set. Same caveat as the other projects in this set: I
 (Claude) wrote this without access to the SDK compiler or a real/
 simulated device - treat it as a carefully-reasoned first draft, not
 tested software.
+
+## Fifteenth fix: vector fallback redrawn to actually look like the photo
+
+You flagged that the procedural vector-illustration background (the
+"Background" setting's alternative to your real photo) "looks nothing
+like the photo" - a fair, literal criticism. It wasn't a bad rendering of
+the Santorini scene, it was a rendering of a *different* scene: layered
+mountain ranges, a snow cap, and pine trees. That's a leftover from
+before this project was renamed from "Arctic Peak" (see above) - the
+photo changed, but the vector fallback never got redesigned to match it.
+It does now.
+
+Rather than guess at colors, I sampled real pixel values out of
+`resources/drawables/bg_photo.png` with Python/PIL: a vertical scan for
+the sky-to-sea color gradient (cool blue-grey at the top, warming to gold
+around the sun, hazy grey-blue sea, darkening toward the foreground), and
+a horizontal scan along the horizon row to find the sun's actual
+x-position (brightest column, ~35% of the width) and the windmill
+silhouette's actual horizontal span (darkest block, ~75-93% of the
+width). The new `drawVectorBackground()` in `SantoriniSunsetView.mc`
+builds the scene from those real values: a four-band sky and four-band
+sea (same "stack flat color bands to fake a gradient" trick the old
+version used - there's no gradient-fill primitive in this API - just
+aimed at the right subject this time), a four-ring sun glow low on the
+horizon with a short reflection shimmer on the water, two small boat
+silhouettes, a windmill (tower, conical roof, five fanned sail blades)
+sized and positioned to match the real photo's silhouette, a dusk-toned
+building with a rounded arched doorway, and a terrace railing across the
+foreground - echoing the photo's actual composition instead of standing
+in for it. The old `drawTree()` helper is gone; nothing else called it.
+
+I mocked this up in Python first (`verify/santorini_vector_v2.py`) and
+rendered it side-by-side against the real photo
+(`verify/santorini_vector_v2_sidebyside.png`) before touching the Monkey
+C - the first pass used 3 widely-spaced sun-glow rings and looked like a
+hard-edged bullseye rather than a soft glow, so I switched to 4 rings
+stepped closer together; the reflection streak was also too long/thick
+on the first render and got shortened and thinned. All coordinates are
+still fractions of screen width/height, same convention as the rest of
+the file, and hardcoded (not randomized) so the scene is identical every
+redraw.
+
+Same caveat as always: I can't compile or run this, so "matches the
+photo" is verified by a side-by-side PIL render, not a real device.
+
+## Fourteenth fix: seconds hand, move bar, sunrise/sunset, steps ring
+
+Same four additions as Rossonero and milan-personal - see
+`rossonero/README.md`'s "Fifteenth round" for the full reasoning on each
+(stress was already there, `FIELD_STRESS` since the Eighth fix - nothing
+to add for it). Sunrise/Sunset landing on this project in particular is a
+nice coincidence given the name, though see below for why it's still the
+least certain of the four.
+
+Two things needed a different treatment here than in the other two
+projects, because this face draws over a photo (or the vector scene)
+rather than a flat striped background:
+
+- **The seconds hand** now gets the same black-shadow-then-real-color
+  technique `drawDate()`/`drawAnalogDialMarks()` already use - the hour
+  and minute hands don't need it (thick enough, halfWidth 0.022/0.015, to
+  stay legible against the photo already), but this hand is much thinner
+  (0.006) specifically to read as visually distinct from them, and a line
+  that thin is exactly what disappeared against the photo before the
+  shadow technique existed. Not worth shipping unprotected just because
+  the other two hands happen to get away without one.
+- **The steps-progress ring** gets the same shadow treatment for the same
+  reason - it's thin ticks drawn over the same busy background as the
+  dial ticks/numbers. Its track color (unfilled portion) is also a cooler
+  dark blue (`0x16323e`) rather than Rossonero/milan-personal's warm
+  near-black red, to sit better against this project's dusk-blue photo.
+
+Sunrise/Sunset itself is unchanged from the other two projects -
+`Weather.getSunrise()`/`getSunset()` with `sunLocation()` trying
+`Activity.Info.currentLocation` then falling back to
+`Weather.CurrentConditions.observationLocationPosition`, both needing this
+round's new `Positioning` permission (now declared in manifest.xml - this
+project's `<iq:permissions/>` tag existed empty already, just filled in).
+Falls back to "--" if no location is available, same as Temperature and
+World Clock already do. This is the least field-tested part of the round
+- please check it specifically once you build.
+
+## Thirteenth fix: stat badges lifted into a gentle arc
+
+Same change as Rossonero/milan-personal - see `rossonero/README.md`'s
+"Fourteenth round" entry for the full reasoning. The outer two badges
+sit `STATS_OUTER_LIFT` (0.035) higher than the middle one, same in
+Digital and Analog mode.
 
 ## Twelfth fix: SettingsMenu.mc moved to a shared source folder
 

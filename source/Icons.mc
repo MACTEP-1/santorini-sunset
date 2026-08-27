@@ -308,4 +308,65 @@ module Icons {
         drawBuilding(dc, x + size * 0.24, baseY, size * 0.60, bodyColor, domeColor, false, true);
         drawBuilding(dc, x + size * 0.58, baseY, size * 0.85, bodyColor, domeColor, true, false);
     }
+
+    // Two more icons for the "second hand / move bar / sunrise-sunset /
+    // step ring" round - see rossonero/Icons.mc's comments on these same
+    // functions for the full reasoning; identical implementation. Both
+    // only ever get called against this project's own opaque dark badge
+    // fill (same as every other stat-badge icon here), not directly over
+    // the photo, so neither needs the shadow-copy technique the dial ticks/
+    // numbers use - see View.mc for where that technique IS needed this
+    // round (the second hand and the step ring, both drawn over the photo).
+    function drawMoveBar(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, size as Lang.Numeric, level as Lang.Number, color as Lang.Number) as Void {
+        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
+        var barW = size * 0.15;
+        var gap = size * 0.06;
+        var baseY = y + size;
+        var heights = [0.35, 0.5, 0.65, 0.8, 1.0];
+        var i = 0;
+        while (i < 5) {
+            var bx = x + i * (barW + gap);
+            var bh = size * 0.55 * heights[i];
+            if (i < level) {
+                dc.fillRectangle(bx, baseY - bh, barW, bh);
+            } else {
+                dc.setPenWidth(1);
+                dc.drawRectangle(bx, baseY - bh, barW, bh);
+            }
+            i += 1;
+        }
+    }
+
+    function drawSunHorizon(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, size as Lang.Numeric, color as Lang.Number, rising as Lang.Boolean) as Void {
+        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
+        var horizonY = y + size * 0.62;
+        dc.setPenWidth(2);
+        dc.drawLine(x + size * 0.02, horizonY, x + size * 0.62, horizonY);
+        var sunR = size * 0.22;
+        var scx = x + size * 0.32;
+        dc.fillCircle(scx, horizonY, sunR);
+
+        var ax = x + size * 0.82;
+        if (rising) {
+            dc.fillPolygon([
+                [ax, y + size * 0.05],
+                [ax - size * 0.16, y + size * 0.42],
+                [ax + size * 0.16, y + size * 0.42]
+            ]);
+        } else {
+            dc.fillPolygon([
+                [ax, y + size * 0.42],
+                [ax - size * 0.16, y + size * 0.05],
+                [ax + size * 0.16, y + size * 0.05]
+            ]);
+        }
+    }
+
+    function drawSunrise(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, size as Lang.Numeric, color as Lang.Number) as Void {
+        drawSunHorizon(dc, x, y, size, color, true);
+    }
+
+    function drawSunset(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, size as Lang.Numeric, color as Lang.Number) as Void {
+        drawSunHorizon(dc, x, y, size, color, false);
+    }
 }

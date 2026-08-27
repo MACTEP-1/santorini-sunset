@@ -7,7 +7,8 @@
     <!-- Which stat each of the 3 badge circles shows. Values match
          SantoriniSunsetView.mc's FIELD_* constants exactly:
          0=Steps 1=Heart Rate 2=Calories 3=Distance 4=Floors Climbed
-         5=Active Minutes 6=Battery 7=Stress 8=Temperature 9=World Clock.
+         5=Active Minutes 6=Battery 7=Stress 8=Temperature 9=World Clock
+         10=Move Bar 11=Sunrise 12=Sunset.
          Defaults (0/1/2) reproduce the original fixed steps/heart/calories
          layout, so an existing install looks unchanged until the user
          actually opens Settings. -->
@@ -24,4 +25,9 @@
          minute hands from screen center). Default 0 keeps existing
          installs unchanged until the user opens Settings. -->
     <property id="ClockStyle" type="number">0</property>
+
+    <!-- Digital-only decorative steps/stepGoal progress ring - see
+         SantoriniSunsetView.mc's STEP_RING_* constants for why this
+         doesn't show in Analog. Default true (on). -->
+    <property id="ShowStepRing" type="boolean">true</property>
 </properties>
