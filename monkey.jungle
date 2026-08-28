@@ -2,7 +2,7 @@
 project.manifest = manifest.xml
 base.resourcePath = resources
 
-# Pulls in shared/SettingsMenu.mc from the sibling shared-src folder -
-# see rossonero/monkey.jungle's comment and shared-src/SettingsMenu.mc's
+# Pulls in shared/SettingsMenu.mc from the sibling garmin-shared-src folder -
+# see rossonero/monkey.jungle's comment and garmin-shared-src/SettingsMenu.mc's
 # header for the full reasoning.
-base.sourcePath = source;../shared-src
+base.sourcePath = source;../garmin-shared-src

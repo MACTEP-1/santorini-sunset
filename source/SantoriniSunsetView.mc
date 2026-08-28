@@ -136,7 +136,7 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         stopTicking();
     }
 
-    // Called by WatchFaceInputDelegate.onPress() - see shared-src/
+    // Called by WatchFaceInputDelegate.onPress() - see garmin-shared-src/
     // WatchFaceInputDelegate.mc and SantoriniSunsetApp.mc's getInitialView().
     function toggleAltFields() as Void {
         _showAltFields = !_showAltFields;

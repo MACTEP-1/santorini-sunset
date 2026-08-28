@@ -11,7 +11,7 @@ class SantoriniSunsetApp extends Application.AppBase {
     function onStop(state as Lang.Dictionary?) as Void {
     }
     function getInitialView() as [ WatchUi.Views ] or [ WatchUi.Views, WatchUi.InputDelegates ] {
-        // WatchFaceInputDelegate (shared-src) wires up long-press-to-swap-
+        // WatchFaceInputDelegate (garmin-shared-src) wires up long-press-to-swap-
         // fields - see that file and SantoriniSunsetView.mc's
         // toggleAltFields().
         var view = new SantoriniSunsetView();
@@ -21,7 +21,7 @@ class SantoriniSunsetApp extends Application.AppBase {
         WatchUi.requestUpdate();
     }
     // On-device "Customize" settings (hold the button in watch-face
-    // selection mode) - see shared-src/SettingsMenu.mc for the full
+    // selection mode) - see garmin-shared-src/SettingsMenu.mc for the full
     // explanation. SettingsMenu/SettingsDelegate now come from that
     // shared file (via monkey.jungle's sourcePath), not a per-project
     // class - class names dropped their "SantoriniSunset" prefix

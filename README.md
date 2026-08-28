@@ -21,7 +21,7 @@ tested software.
 Same three additions as rossonero/milan-personal this round - see
 `rossonero/README.md`'s "Sixteenth round" for the full reasoning
 (identical mapping/icons, identical `WatchFaceInputDelegate` mechanism
-from `shared-src/`). Two things needed different treatment here, same
+from `garmin-shared-src/`). Two things needed different treatment here, same
 split as every round that touches things drawn directly over the photo:
 
 - **The charging bolt on the bottom battery readout** (not the badge
@@ -135,8 +135,8 @@ Same change as Rossonero and milan-personal - see `rossonero/README.md`'s
 of the same fix; numbered "Twelfth" here to match this project's own
 fix-count, one behind the other two since this file uses "fix" not
 "round"). `source/SettingsMenu.mc` is gone from this project; it now
-lives in `garmin/shared-src/SettingsMenu.mc` and is pulled in via
-`monkey.jungle`'s `base.sourcePath = source;../shared-src`.
+lives in `garmin/garmin-shared-src/SettingsMenu.mc` and is pulled in via
+`monkey.jungle`'s `base.sourcePath = source;../garmin-shared-src`.
 `SantoriniSunsetApp.mc`'s `getSettingsView()` now uses the shared,
 unprefixed `SettingsMenu`/`SettingsDelegate` classes. Edit the shared
 copy, not a per-project one, for any future settings-menu change.
@@ -537,7 +537,7 @@ source/
   SantoriniSunsetView.mc     All drawing logic (photo + vector backgrounds)
   Icons.mc                   Small vector icons (steps/heart/flame/battery/windmill)
 
-../shared-src/                (sibling folder, NOT inside this project)
+../garmin-shared-src/                (sibling folder, NOT inside this project)
   SettingsMenu.mc             On-device Customize menu - shared with
                                rossonero and milan-personal, see
                                "Twelfth fix" above.
