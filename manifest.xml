@@ -2,19 +2,23 @@
 <!--
   Santorini Sunset - Connect IQ watch face manifest
 
-  minApiLevel is 4.0.0 (bumped from the original Arctic Peak project's
-  3.3.0) because the photo background is drawn with Dc.drawScaledBitmap(),
-  which needs API 4.0.0 - every device in the product list below is CIQ4+
-  already, so this doesn't drop any of them (same reasoning as
-  milan-personal's manifest).
+  minApiLevel is 4.2.0 (bumped from 4.0.0, itself bumped from the original
+  Arctic Peak project's 3.3.0). The 4.0.0 bump was for the photo
+  background's Dc.drawScaledBitmap(). The 4.2.0 bump is for the
+  long-press-to-swap-fields feature (WatchUi.WatchFaceDelegate.onPress())
+  - see rossonero/manifest.xml's longer comment for the full API research.
+  UNLIKE rossonero/milan-personal, this doesn't drop any device from the
+  list below: it already excludes vivoactive4 (dropped earlier, before
+  this round, for an unrelated reason - see README.md), and every
+  remaining device here is API 5.0+ per Garmin's own compatible-devices
+  table, comfortably clear of 4.2.0.
 
-  NOTE ON DEVICE IDS: same caveat as Ritmo's manifest - this device list is a
-  best-effort snapshot, not guaranteed current. Before your first build, use
-  "Monkey C: Edit Products" in the VS Code extension to refresh it against
-  your installed SDK.
+  NOTE ON DEVICE IDS: this list is managed by you directly via "Monkey C:
+  Edit Products" in VS Code - only minApiLevel was touched above, the
+  <iq:products> list itself is untouched.
 -->
 <iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
-    <iq:application id="8eb35071-3151-4f55-9fb1-06664f01f526" type="watchface" name="@Strings.AppName" entry="SantoriniSunsetApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="4.0.0">
+    <iq:application id="8eb35071-3151-4f55-9fb1-06664f01f526" type="watchface" name="@Strings.AppName" entry="SantoriniSunsetApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="4.2.0">
         <iq:products>
             <iq:product id="epix2"/>
             <iq:product id="fenix7"/>

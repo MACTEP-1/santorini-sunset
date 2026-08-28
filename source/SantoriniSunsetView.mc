@@ -28,6 +28,9 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     private var _isAwake as Lang.Boolean = false;
     private var _tickTimer as Timer.Timer?;
     private var _bgPhoto as Graphics.BitmapType?;
+    // Long-press-to-swap-fields state - see RossoneroView.mc's identical
+    // field for the full reasoning (not persisted, resets on relaunch).
+    private var _showAltFields as Lang.Boolean = false;
 
     // ---- Layout constants (fractions of screen width/height) ------------
     // Same round-display chord-width reasoning as Ritmo's layout comment:
@@ -60,6 +63,7 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     const FG = 0xf2f6f8;
     const DIM = 0xc9d6dd;
     const ACCENT = 0x5fb3e0;
+    const CHARGE_COLOR = 0xffcc00;
     // Soft teal/green for the backdrop dome in the awake-only top icon
     // scene - see Icons.drawSantoriniScene.
     const BG_DOME = 0x8cc3aa;
@@ -130,6 +134,13 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
 
     function onHide() as Void {
         stopTicking();
+    }
+
+    // Called by WatchFaceInputDelegate.onPress() - see shared-src/
+    // WatchFaceInputDelegate.mc and SantoriniSunsetApp.mc's getInitialView().
+    function toggleAltFields() as Void {
+        _showAltFields = !_showAltFields;
+        WatchUi.requestUpdate();
     }
 
     function onExitSleep() as Void {
@@ -654,12 +665,24 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     function drawStats(dc as Graphics.Dc, w as Lang.Number, h as Lang.Number) as Void {
         var info = ActivityMonitor.getInfo();
 
-        var field1 = Properties.getValue("Field1") as Lang.Number?;
-        var field2 = Properties.getValue("Field2") as Lang.Number?;
-        var field3 = Properties.getValue("Field3") as Lang.Number?;
-        if (field1 == null) { field1 = FIELD_STEPS; }
-        if (field2 == null) { field2 = FIELD_HEART; }
-        if (field3 == null) { field3 = FIELD_CALORIES; }
+        var field1;
+        var field2;
+        var field3;
+        if (_showAltFields) {
+            field1 = Properties.getValue("Field1Alt") as Lang.Number?;
+            field2 = Properties.getValue("Field2Alt") as Lang.Number?;
+            field3 = Properties.getValue("Field3Alt") as Lang.Number?;
+            if (field1 == null) { field1 = FIELD_FLOORS; }
+            if (field2 == null) { field2 = FIELD_STRESS; }
+            if (field3 == null) { field3 = FIELD_MOVE_BAR; }
+        } else {
+            field1 = Properties.getValue("Field1") as Lang.Number?;
+            field2 = Properties.getValue("Field2") as Lang.Number?;
+            field3 = Properties.getValue("Field3") as Lang.Number?;
+            if (field1 == null) { field1 = FIELD_STEPS; }
+            if (field2 == null) { field2 = FIELD_HEART; }
+            if (field3 == null) { field3 = FIELD_CALORIES; }
+        }
 
         var cy = h * STATS_Y;
         var cyOuter = cy - h * STATS_OUTER_LIFT;
@@ -911,12 +934,31 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
             // drawBattery's box is size x size*0.5 (half-height), unlike
             // the other icons here - nudge down to stay vertically
             // centered in the same icon slot instead of hugging the top.
-            var pct = System.getSystemStats().battery;
-            Icons.drawBattery(dc, iconX, iconTopY + iconSize * 0.25, iconSize, pct, ACCENT, ACCENT);
+            var stats = System.getSystemStats();
+            Icons.drawBattery(dc, iconX, iconTopY + iconSize * 0.25, iconSize, stats.battery, ACCENT, ACCENT);
+            // Solid badge background (0x0d1b26 fill above), not the raw
+            // photo - no shadow-copy needed here, same as every other icon
+            // in this function.
+            if (stats.charging) {
+                Icons.drawChargingBolt(dc, cx + r * 0.25, cy - r * 0.85, r * 0.30, CHARGE_COLOR);
+            }
         } else if (fieldId == FIELD_STRESS) {
             Icons.drawStress(dc, iconX, iconTopY, iconSize, ACCENT);
         } else if (fieldId == FIELD_TEMPERATURE) {
-            Icons.drawTemperature(dc, iconX, iconTopY, iconSize, ACCENT);
+            var cat = weatherIconCategory();
+            if (cat == 0) {
+                Icons.drawWeatherClear(dc, iconX, iconTopY, iconSize, ACCENT);
+            } else if (cat == 1) {
+                Icons.drawWeatherCloud(dc, iconX, iconTopY, iconSize, ACCENT);
+            } else if (cat == 2) {
+                Icons.drawWeatherRain(dc, iconX, iconTopY, iconSize, ACCENT);
+            } else if (cat == 3) {
+                Icons.drawWeatherSnow(dc, iconX, iconTopY, iconSize, ACCENT);
+            } else if (cat == 4) {
+                Icons.drawWeatherStorm(dc, iconX, iconTopY, iconSize, ACCENT);
+            } else {
+                Icons.drawTemperature(dc, iconX, iconTopY, iconSize, ACCENT);
+            }
         } else if (fieldId == FIELD_WORLD_CLOCK) {
             Icons.drawWorldClock(dc, iconX, iconTopY, iconSize, ACCENT);
         } else if (fieldId == FIELD_MOVE_BAR) {
@@ -965,11 +1007,15 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     // ---- Battery readout --------------------------------------------------
 
     function drawBattery(dc as Graphics.Dc, w as Lang.Number, h as Lang.Number) as Void {
-        var battery = System.getSystemStats().battery;
+        var stats = System.getSystemStats();
+        var battery = stats.battery;
+        var charging = stats.charging;
         var text = battery.format("%d") + "%";
         var iconSize = w * 0.055;
         var textWidth = dc.getTextWidthInPixels(text, Graphics.FONT_XTINY);
-        var groupWidth = iconSize + w * 0.02 + textWidth;
+        var boltSize = iconSize * 0.55;
+        var boltGap = charging ? w * 0.015 : 0;
+        var groupWidth = iconSize + w * 0.02 + textWidth + boltGap + (charging ? boltSize : 0);
         var x = w * 0.5 - groupWidth * 0.5;
         var battYCenter = h * BATTERY_Y;
 
@@ -977,6 +1023,57 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         dc.setColor(DIM, Graphics.COLOR_TRANSPARENT);
         dc.drawText(x + iconSize + w * 0.02, battYCenter, Graphics.FONT_XTINY, text,
             Graphics.TEXT_JUSTIFY_LEFT + Graphics.TEXT_JUSTIFY_VCENTER);
+        if (charging) {
+            // This readout sits directly over the photo (no badge fill
+            // behind it), unlike the FIELD_BATTERY badge case above - gets
+            // the same black-shadow-then-color technique as the seconds
+            // hand/step ring, since it's exactly the kind of thin shape
+            // that's disappeared against the photo before without it.
+            var boltX = x + iconSize + w * 0.02 + textWidth + boltGap;
+            var boltY = battYCenter - boltSize * 0.5;
+            Icons.drawChargingBolt(dc, boltX + 1, boltY + 1, boltSize, Graphics.COLOR_BLACK);
+            Icons.drawChargingBolt(dc, boltX, boltY, boltSize, CHARGE_COLOR);
+        }
+    }
+
+    // See rossonero/RossoneroView.mc's weatherIconCategory() for the full
+    // reasoning (54 CONDITION_* codes mapped to 5 icon buckets) - identical
+    // logic, ported as-is.
+    function weatherIconCategory() as Lang.Number {
+        if (!(Toybox has :Weather)) { return -1; }
+        var conditions = Weather.getCurrentConditions();
+        if (conditions == null || conditions.condition == null) { return -1; }
+        var c = conditions.condition;
+        if (c == Weather.CONDITION_CLEAR || c == Weather.CONDITION_FAIR ||
+            c == Weather.CONDITION_PARTLY_CLEAR || c == Weather.CONDITION_MOSTLY_CLEAR) {
+            return 0;
+        }
+        if (c == Weather.CONDITION_THUNDERSTORMS || c == Weather.CONDITION_SCATTERED_THUNDERSTORMS ||
+            c == Weather.CONDITION_CHANCE_OF_THUNDERSTORMS ||
+            c == Weather.CONDITION_TORNADO || c == Weather.CONDITION_HURRICANE ||
+            c == Weather.CONDITION_TROPICAL_STORM || c == Weather.CONDITION_WINDY ||
+            c == Weather.CONDITION_SQUALL) {
+            return 4;
+        }
+        if (c == Weather.CONDITION_SNOW || c == Weather.CONDITION_LIGHT_SNOW || c == Weather.CONDITION_HEAVY_SNOW ||
+            c == Weather.CONDITION_CHANCE_OF_SNOW || c == Weather.CONDITION_FLURRIES ||
+            c == Weather.CONDITION_CLOUDY_CHANCE_OF_SNOW || c == Weather.CONDITION_WINTRY_MIX ||
+            c == Weather.CONDITION_LIGHT_RAIN_SNOW || c == Weather.CONDITION_HEAVY_RAIN_SNOW ||
+            c == Weather.CONDITION_RAIN_SNOW || c == Weather.CONDITION_CHANCE_OF_RAIN_SNOW ||
+            c == Weather.CONDITION_CLOUDY_CHANCE_OF_RAIN_SNOW || c == Weather.CONDITION_FREEZING_RAIN ||
+            c == Weather.CONDITION_SLEET || c == Weather.CONDITION_ICE_SNOW || c == Weather.CONDITION_ICE ||
+            c == Weather.CONDITION_HAIL) {
+            return 3;
+        }
+        if (c == Weather.CONDITION_RAIN || c == Weather.CONDITION_LIGHT_RAIN || c == Weather.CONDITION_HEAVY_RAIN ||
+            c == Weather.CONDITION_SCATTERED_SHOWERS || c == Weather.CONDITION_LIGHT_SHOWERS ||
+            c == Weather.CONDITION_SHOWERS || c == Weather.CONDITION_HEAVY_SHOWERS ||
+            c == Weather.CONDITION_CHANCE_OF_SHOWERS || c == Weather.CONDITION_DRIZZLE ||
+            c == Weather.CONDITION_UNKNOWN_PRECIPITATION || c == Weather.CONDITION_CLOUDY_CHANCE_OF_RAIN) {
+            return 2;
+        }
+        if (c == Weather.CONDITION_UNKNOWN) { return -1; }
+        return 1;
     }
 
     function readHeartRate() as Lang.Number? {

@@ -16,6 +16,30 @@ that direction was set. Same caveat as the other projects in this set: I
 simulated device - treat it as a carefully-reasoned first draft, not
 tested software.
 
+## Sixteenth fix: charging bolt, weather-condition icon, long-press to swap fields
+
+Same three additions as rossonero/milan-personal this round - see
+`rossonero/README.md`'s "Sixteenth round" for the full reasoning
+(identical mapping/icons, identical `WatchFaceInputDelegate` mechanism
+from `shared-src/`). Two things needed different treatment here, same
+split as every round that touches things drawn directly over the photo:
+
+- **The charging bolt on the bottom battery readout** (not the badge
+  version - see below) sits directly over the photo, so it gets the same
+  black-shadow-then-color technique as the seconds hand/step ring -
+  drawn twice, a black copy offset by 1px first, then the real amber
+  version on top.
+- **The charging bolt on the Battery stat badge**, and the new
+  weather-condition icon on the Temperature badge, sit on top of that
+  badge's own solid dark circle fill, not the raw photo - no shadow
+  needed there, same as every other badge icon in this project.
+
+`minApiLevel` was bumped 4.0.0 -> 4.2.0 for the long-press feature, same
+as the other two projects, but this one didn't lose a device over it -
+this project's device list already excluded `vivoactive4` from an
+earlier, unrelated round, so every remaining device is comfortably above
+4.2.0 already.
+
 ## Fifteenth fix: vector fallback redrawn to actually look like the photo
 
 You flagged that the procedural vector-illustration background (the

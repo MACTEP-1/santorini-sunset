@@ -11,7 +11,7 @@
     <string id="SettingShowSeconds">Show seconds (high-power mode only)</string>
 
     <string id="SettingBackground">Background</string>
-    <string id="SettingBackgroundPhoto">Photo (Santorini sunset)</string>
+    <string id="SettingBackgroundPhoto">Photo (your Santorini sunset)</string>
     <string id="SettingBackgroundVector">Vector illustration (lighter on memory)</string>
 
     <!-- Data field pickers - one per stat-badge circle, same options in
@@ -20,6 +20,10 @@
     <string id="SettingField1">Left circle shows</string>
     <string id="SettingField2">Middle circle shows</string>
     <string id="SettingField3">Right circle shows</string>
+
+    <string id="SettingField1Alt">Left circle shows (long-press)</string>
+    <string id="SettingField2Alt">Middle circle shows (long-press)</string>
+    <string id="SettingField3Alt">Right circle shows (long-press)</string>
 
     <string id="FieldSteps">Steps</string>
     <string id="FieldHeartRate">Heart rate</string>

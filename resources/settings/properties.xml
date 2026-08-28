@@ -16,6 +16,12 @@
     <property id="Field2" type="number">1</property>
     <property id="Field3" type="number">2</property>
 
+    <!-- Long-press "alternate" field set - see rossonero/properties.xml's
+         identical block for the full reasoning. -->
+    <property id="Field1Alt" type="number">4</property>
+    <property id="Field2Alt" type="number">7</property>
+    <property id="Field3Alt" type="number">10</property>
+
     <!-- Whole-hour UTC offset for the World Clock field, e.g. 9 for
          Tokyo/UTC+9, -5 for New York (standard time). Only matters if a
          circle is actually set to World Clock. -->

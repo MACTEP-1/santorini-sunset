@@ -64,6 +64,60 @@
         </settingConfig>
     </setting>
 
+    <setting propertyKey="@Properties.Field1Alt" title="@Strings.SettingField1Alt">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.FieldSteps</listEntry>
+            <listEntry value="1">@Strings.FieldHeartRate</listEntry>
+            <listEntry value="2">@Strings.FieldCalories</listEntry>
+            <listEntry value="3">@Strings.FieldDistance</listEntry>
+            <listEntry value="4">@Strings.FieldFloors</listEntry>
+            <listEntry value="5">@Strings.FieldActiveMinutes</listEntry>
+            <listEntry value="6">@Strings.FieldBattery</listEntry>
+            <listEntry value="7">@Strings.FieldStress</listEntry>
+            <listEntry value="8">@Strings.FieldTemperature</listEntry>
+            <listEntry value="9">@Strings.FieldWorldClock</listEntry>
+            <listEntry value="10">@Strings.FieldMoveBar</listEntry>
+            <listEntry value="11">@Strings.FieldSunrise</listEntry>
+            <listEntry value="12">@Strings.FieldSunset</listEntry>
+        </settingConfig>
+    </setting>
+
+    <setting propertyKey="@Properties.Field2Alt" title="@Strings.SettingField2Alt">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.FieldSteps</listEntry>
+            <listEntry value="1">@Strings.FieldHeartRate</listEntry>
+            <listEntry value="2">@Strings.FieldCalories</listEntry>
+            <listEntry value="3">@Strings.FieldDistance</listEntry>
+            <listEntry value="4">@Strings.FieldFloors</listEntry>
+            <listEntry value="5">@Strings.FieldActiveMinutes</listEntry>
+            <listEntry value="6">@Strings.FieldBattery</listEntry>
+            <listEntry value="7">@Strings.FieldStress</listEntry>
+            <listEntry value="8">@Strings.FieldTemperature</listEntry>
+            <listEntry value="9">@Strings.FieldWorldClock</listEntry>
+            <listEntry value="10">@Strings.FieldMoveBar</listEntry>
+            <listEntry value="11">@Strings.FieldSunrise</listEntry>
+            <listEntry value="12">@Strings.FieldSunset</listEntry>
+        </settingConfig>
+    </setting>
+
+    <setting propertyKey="@Properties.Field3Alt" title="@Strings.SettingField3Alt">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.FieldSteps</listEntry>
+            <listEntry value="1">@Strings.FieldHeartRate</listEntry>
+            <listEntry value="2">@Strings.FieldCalories</listEntry>
+            <listEntry value="3">@Strings.FieldDistance</listEntry>
+            <listEntry value="4">@Strings.FieldFloors</listEntry>
+            <listEntry value="5">@Strings.FieldActiveMinutes</listEntry>
+            <listEntry value="6">@Strings.FieldBattery</listEntry>
+            <listEntry value="7">@Strings.FieldStress</listEntry>
+            <listEntry value="8">@Strings.FieldTemperature</listEntry>
+            <listEntry value="9">@Strings.FieldWorldClock</listEntry>
+            <listEntry value="10">@Strings.FieldMoveBar</listEntry>
+            <listEntry value="11">@Strings.FieldSunrise</listEntry>
+            <listEntry value="12">@Strings.FieldSunset</listEntry>
+        </settingConfig>
+    </setting>
+
     <setting propertyKey="@Properties.WorldClockOffset" title="@Strings.SettingWorldClockOffset">
         <settingConfig type="list">
             <listEntry value="-12">@Strings.UtcM12</listEntry>

@@ -11,7 +11,11 @@ class SantoriniSunsetApp extends Application.AppBase {
     function onStop(state as Lang.Dictionary?) as Void {
     }
     function getInitialView() as [ WatchUi.Views ] or [ WatchUi.Views, WatchUi.InputDelegates ] {
-        return [ new SantoriniSunsetView() ];
+        // WatchFaceInputDelegate (shared-src) wires up long-press-to-swap-
+        // fields - see that file and SantoriniSunsetView.mc's
+        // toggleAltFields().
+        var view = new SantoriniSunsetView();
+        return [ view, new WatchFaceInputDelegate(view) ];
     }
     function onSettingsChanged() as Void {
         WatchUi.requestUpdate();
