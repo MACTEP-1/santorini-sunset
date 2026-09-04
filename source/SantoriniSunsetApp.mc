@@ -2,6 +2,16 @@ using Toybox.Application;
 using Toybox.Lang;
 using Toybox.WatchUi;
 
+// App version - shown in the on-device Customize menu's title (see
+// garmin-shared-src/SettingsMenu.mc). Bump on every push, same value
+// typed into the Store dashboard when updating this project's Beta
+// listing. See rossonero/source/RossoneroApp.mc's comment and the
+// project status doc's "Versioning introduced" section for the full
+// MAJOR.MINOR.PATCH scheme. 1.0.1 = step-progress-ring rendering fix;
+// 1.1.0 = this round, ring now also shown in Analog mode (MINOR, a real
+// behavior change, not just a fix).
+const APP_VERSION = "1.1.0";
+
 class SantoriniSunsetApp extends Application.AppBase {
     function initialize() {
         AppBase.initialize();

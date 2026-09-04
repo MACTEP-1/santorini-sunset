@@ -40,7 +40,7 @@
     <string id="FieldSunset">Sunset (needs location - see README)</string>
     <string id="FieldMoonPhase">Moon phase</string>
 
-    <string id="SettingShowStepRing">Show step-goal ring (Digital clock style only)</string>
+    <string id="SettingShowStepRing">Show step-goal ring</string>
 
     <string id="SettingWorldClockOffset">World clock offset (whole hours from UTC - only matters if a circle above is set to World Clock)</string>
     <string id="UtcM12">UTC-12</string>

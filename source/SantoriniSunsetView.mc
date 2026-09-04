@@ -732,7 +732,11 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         } else if (fieldId == FIELD_BATTERY) {
             return System.getSystemStats().battery.format("%d") + "%";
         } else if (fieldId == FIELD_STRESS) {
-            var stress = info.stressScore;
+            // FIX: stressScore is a device/API-dependent member of Info,
+            // not a guaranteed one - it's absent (not just null) on some
+            // devices, and accessing an absent member directly throws a
+            // runtime "Symbol Not Found" crash rather than returning null.
+            var stress = (info has :stressScore) ? info.stressScore : null;
             return (stress != null) ? stress.format("%d") : "--";
         } else if (fieldId == FIELD_TEMPERATURE) {
             return temperatureText();
@@ -824,11 +828,26 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     // hand above): this ring draws over the same photo/vector background
     // as drawAnalogDialMarks(), and it's thin ticks, exactly the shape
     // that needed the shadow fix there too.
+    // Redesigned from 32 discrete tick-dashes (each individually drawn
+    // twice for the black-shadow-then-color photo-contrast technique) to
+    // a continuous stroked ring, same two-layer shadow idea but drawn
+    // once per layer instead of 32 times per layer. User feedback on
+    // rossonero's simulator screenshot ("a little off") was that the
+    // dashed ring crowded the nearby hour-tick ring; on santorini it read
+    // as outright "overlapping" - the per-tick shadow doubling on TWO
+    // nearby rings (this one and the 12-mark hour ring, both already
+    // black-shadowed for photo legibility) compounded the crowding badly.
+    // A single shadow circle/arc plus a single color circle/arc keeps the
+    // same photo-contrast technique with far less visual noise. Same
+    // radial footprint as the old tick version (STEP_RING_RADIUS/
+    // STEP_RING_TICK_LEN unchanged) - see RossoneroView.mc's drawStepRing
+    // for the full drawArc-angle-convention writeup.
     function drawStepRing(dc as Graphics.Dc, w as Lang.Number, h as Lang.Number) as Void {
-        var clockStyle = Properties.getValue("ClockStyle") as Lang.Number?;
-        if (clockStyle != null && clockStyle == 1) {
-            return;
-        }
+        // Used to be Digital-only - see rossonero's drawStepRing for the
+        // full reasoning on why, and why it's now shown in both clock
+        // styles (user request, after seeing and accepting a mockup of
+        // the real Analog crowding against the hour numerals). Governed
+        // solely by the existing ShowStepRing setting below.
         var showRing = Properties.getValue("ShowStepRing") as Lang.Boolean?;
         if (showRing != null && !showRing) {
             return;
@@ -845,29 +864,49 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
 
         var cx = w * 0.5;
         var cy = h * 0.5;
-        var r = w * STEP_RING_RADIUS;
-        var tickLen = w * STEP_RING_TICK_LEN;
+        var r = w * (STEP_RING_RADIUS - (STEP_RING_TICK_LEN * 0.5));
+        var ringWidth = (w * STEP_RING_TICK_LEN).toNumber();
+        if (ringWidth < 1) { ringWidth = 1; }
+        var shadowWidth = ringWidth + 1;
 
-        var i = 0;
-        while (i < STEP_RING_SEGMENTS) {
-            var angleDeg = i * (360.0 / STEP_RING_SEGMENTS);
-            var filled = (i.toFloat() / STEP_RING_SEGMENTS) <= progress;
-            var rad = Math.toRadians(angleDeg);
-            var dirX = Math.sin(rad);
-            var dirY = -Math.cos(rad);
-            var outerX = cx + dirX * r;
-            var outerY = cy + dirY * r;
-            var innerX = cx + dirX * (r - tickLen);
-            var innerY = cy + dirY * (r - tickLen);
+        // Track, shadow then color.
+        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(shadowWidth);
+        dc.drawCircle(cx + 1, cy + 1, r);
+        dc.setColor(STEP_RING_TRACK, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(ringWidth);
+        dc.drawCircle(cx, cy, r);
 
-            dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
-            dc.setPenWidth(filled ? 4 : 3);
-            dc.drawLine(innerX + 1, innerY + 1, outerX + 1, outerY + 1);
+        if (progress <= 0.0) {
+            return;
+        }
 
-            dc.setColor(filled ? STEP_RING_GREEN : STEP_RING_TRACK, Graphics.COLOR_TRANSPARENT);
-            dc.setPenWidth(filled ? 3 : 2);
-            dc.drawLine(innerX, innerY, outerX, outerY);
-            i += 1;
+        // Progress arc, shadow then color, same start/end both layers.
+        var arcAngle;
+        var isFull = (progress >= 1.0);
+        if (!isFull) {
+            arcAngle = 90.0 - (progress * 360.0);
+            while (arcAngle < 0.0) {
+                arcAngle += 360.0;
+            }
+        } else {
+            arcAngle = 0.0; // Unused in the full-circle branch below.
+        }
+
+        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(shadowWidth);
+        if (isFull) {
+            dc.drawCircle(cx + 1, cy + 1, r);
+        } else {
+            dc.drawArc(cx + 1, cy + 1, r, Graphics.ARC_CLOCKWISE, 90.0, arcAngle);
+        }
+
+        dc.setColor(STEP_RING_GREEN, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(ringWidth);
+        if (isFull) {
+            dc.drawCircle(cx, cy, r);
+        } else {
+            dc.drawArc(cx, cy, r, Graphics.ARC_CLOCKWISE, 90.0, arcAngle);
         }
     }
 
