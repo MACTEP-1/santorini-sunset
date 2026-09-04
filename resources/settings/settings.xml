@@ -25,6 +25,7 @@
             <listEntry value="10">@Strings.FieldMoveBar</listEntry>
             <listEntry value="11">@Strings.FieldSunrise</listEntry>
             <listEntry value="12">@Strings.FieldSunset</listEntry>
+            <listEntry value="13">@Strings.FieldMoonPhase</listEntry>
         </settingConfig>
     </setting>
 
@@ -43,6 +44,7 @@
             <listEntry value="10">@Strings.FieldMoveBar</listEntry>
             <listEntry value="11">@Strings.FieldSunrise</listEntry>
             <listEntry value="12">@Strings.FieldSunset</listEntry>
+            <listEntry value="13">@Strings.FieldMoonPhase</listEntry>
         </settingConfig>
     </setting>
 
@@ -61,6 +63,7 @@
             <listEntry value="10">@Strings.FieldMoveBar</listEntry>
             <listEntry value="11">@Strings.FieldSunrise</listEntry>
             <listEntry value="12">@Strings.FieldSunset</listEntry>
+            <listEntry value="13">@Strings.FieldMoonPhase</listEntry>
         </settingConfig>
     </setting>
 
@@ -79,6 +82,7 @@
             <listEntry value="10">@Strings.FieldMoveBar</listEntry>
             <listEntry value="11">@Strings.FieldSunrise</listEntry>
             <listEntry value="12">@Strings.FieldSunset</listEntry>
+            <listEntry value="13">@Strings.FieldMoonPhase</listEntry>
         </settingConfig>
     </setting>
 
@@ -97,6 +101,7 @@
             <listEntry value="10">@Strings.FieldMoveBar</listEntry>
             <listEntry value="11">@Strings.FieldSunrise</listEntry>
             <listEntry value="12">@Strings.FieldSunset</listEntry>
+            <listEntry value="13">@Strings.FieldMoonPhase</listEntry>
         </settingConfig>
     </setting>
 
@@ -115,6 +120,7 @@
             <listEntry value="10">@Strings.FieldMoveBar</listEntry>
             <listEntry value="11">@Strings.FieldSunrise</listEntry>
             <listEntry value="12">@Strings.FieldSunset</listEntry>
+            <listEntry value="13">@Strings.FieldMoonPhase</listEntry>
         </settingConfig>
     </setting>
 

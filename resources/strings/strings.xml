@@ -38,6 +38,7 @@
     <string id="FieldMoveBar">Move bar (inactivity, 0-5)</string>
     <string id="FieldSunrise">Sunrise (needs location - see README)</string>
     <string id="FieldSunset">Sunset (needs location - see README)</string>
+    <string id="FieldMoonPhase">Moon phase</string>
 
     <string id="SettingShowStepRing">Show step-goal ring (Digital clock style only)</string>
 

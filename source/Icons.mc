@@ -450,4 +450,93 @@ module Icons {
         drawCloudBase(dc, x, y, size * 0.78, color);
         drawChargingBolt(dc, x + size * 0.30, y + size * 0.58, size * 0.44, color);
     }
+
+    // ---- Moon phase --------------------------------------------------------
+    // Which of these 8 to call is decided by garmin-shared-src/MoonPhase.mc's
+    // moonPhaseIndex() - pure date math, no Weather/Positioning dependency at
+    // all (unlike the sunrise/sunset icons above). shadowColor is passed in
+    // rather than hardcoded because it has to match the calling project's own
+    // badge-circle fill color (see each View.mc's BADGE_BG) so the "dark
+    // side" of the moon reads as absence, not a mismatched patch sitting on
+    // top of the badge. Verified in a Python mockup at true badge-icon size
+    // before writing this - verify/moon_zoomed.png / moon_true_size.png.
+    function drawMoonNew(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, size as Lang.Numeric, litColor as Lang.Number, shadowColor as Lang.Number) as Void {
+        var cx = x + size * 0.5;
+        var cy = y + size * 0.5;
+        var r = size * 0.5;
+        dc.setColor(shadowColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(cx, cy, r);
+        dc.setColor(litColor, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(1);
+        dc.drawCircle(cx, cy, r - 1);
+    }
+
+    function drawMoonFull(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, size as Lang.Numeric, litColor as Lang.Number, shadowColor as Lang.Number) as Void {
+        dc.setColor(litColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(x + size * 0.5, y + size * 0.5, size * 0.5);
+    }
+
+    function drawMoonFirstQuarter(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, size as Lang.Numeric, litColor as Lang.Number, shadowColor as Lang.Number) as Void {
+        var cx = x + size * 0.5;
+        var cy = y + size * 0.5;
+        dc.setColor(litColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(cx, cy, size * 0.5);
+        dc.setColor(shadowColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(x, y, size * 0.5, size);
+    }
+
+    function drawMoonLastQuarter(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, size as Lang.Numeric, litColor as Lang.Number, shadowColor as Lang.Number) as Void {
+        var cx = x + size * 0.5;
+        var cy = y + size * 0.5;
+        dc.setColor(litColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(cx, cy, size * 0.5);
+        dc.setColor(shadowColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(cx, y, size * 0.5, size);
+    }
+
+    function drawMoonWaxingGibbous(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, size as Lang.Numeric, litColor as Lang.Number, shadowColor as Lang.Number) as Void {
+        var cx = x + size * 0.5;
+        var cy = y + size * 0.5;
+        var r = size * 0.5;
+        dc.setColor(litColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(cx, cy, r);
+        dc.setColor(shadowColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillEllipse(cx - r * 0.68, cy, r * 0.58, r * 1.02);
+    }
+
+    function drawMoonWaningGibbous(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, size as Lang.Numeric, litColor as Lang.Number, shadowColor as Lang.Number) as Void {
+        var cx = x + size * 0.5;
+        var cy = y + size * 0.5;
+        var r = size * 0.5;
+        dc.setColor(litColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(cx, cy, r);
+        dc.setColor(shadowColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillEllipse(cx + r * 0.68, cy, r * 0.58, r * 1.02);
+    }
+
+    function drawMoonWaxingCrescent(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, size as Lang.Numeric, litColor as Lang.Number, shadowColor as Lang.Number) as Void {
+        var cx = x + size * 0.5;
+        var cy = y + size * 0.5;
+        var r = size * 0.5;
+        dc.setColor(litColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(cx, cy, r);
+        dc.setColor(shadowColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillEllipse(cx - r * 0.42, cy, r * 0.92, r * 1.05);
+        dc.setColor(litColor, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(1);
+        dc.drawCircle(cx, cy, r - 1);
+    }
+
+    function drawMoonWaningCrescent(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, size as Lang.Numeric, litColor as Lang.Number, shadowColor as Lang.Number) as Void {
+        var cx = x + size * 0.5;
+        var cy = y + size * 0.5;
+        var r = size * 0.5;
+        dc.setColor(litColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(cx, cy, r);
+        dc.setColor(shadowColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillEllipse(cx + r * 0.42, cy, r * 0.92, r * 1.05);
+        dc.setColor(litColor, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(1);
+        dc.drawCircle(cx, cy, r - 1);
+    }
 }

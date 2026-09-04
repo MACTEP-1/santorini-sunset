@@ -64,6 +64,9 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     const DIM = 0xc9d6dd;
     const ACCENT = 0x5fb3e0;
     const CHARGE_COLOR = 0xffcc00;
+    // Named so the Moon Phase icon's "dark side" (Icons.mc) can be handed
+    // the exact same color the badge circle itself is filled with below.
+    const BADGE_BG = 0x0d1b26;
     // Soft teal/green for the backdrop dome in the awake-only top icon
     // scene - see Icons.drawSantoriniScene.
     const BG_DOME = 0x8cc3aa;
@@ -107,6 +110,9 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     const FIELD_MOVE_BAR = 10;
     const FIELD_SUNRISE = 11;
     const FIELD_SUNSET = 12;
+    // Pure date math (garmin-shared-src/MoonPhase.mc), no Weather/
+    // Positioning dependency unlike Sunrise/Sunset above.
+    const FIELD_MOONPHASE = 13;
 
     // Steps-progress ring - Digital clock style only, see Rossonero's
     // comment on these same constants for the full reasoning. TRACK is a
@@ -738,6 +744,8 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
             return sunriseText();
         } else if (fieldId == FIELD_SUNSET) {
             return sunsetText();
+        } else if (fieldId == FIELD_MOONPHASE) {
+            return moonPhaseText();
         }
         // FIELD_STEPS, and the fallback for any unrecognized value.
         var steps = (info.steps != null) ? info.steps : 0;
@@ -788,6 +796,13 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
         }
         var moment = Weather.getSunset(loc, Time.now());
         return sunMomentText(moment);
+    }
+
+    // Pure date math (garmin-shared-src/MoonPhase.mc) - no location, no
+    // Weather permission, no null/"--" fallback needed at all, unlike
+    // every other field in this function.
+    function moonPhaseText() as Lang.String {
+        return moonPhaseEmoji(moonPhaseIndex());
     }
 
     function sunMomentText(moment as Time.Moment?) as Lang.String {
@@ -911,7 +926,7 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
     // TEXT_JUSTIFY_VCENTER (centers on the anchor regardless of actual
     // font height) rather than wait to hit the same bug here too.
     function drawStatBadge(dc as Graphics.Dc, cx as Lang.Float, cy as Lang.Float, r as Lang.Float, fieldId as Lang.Number, text as Lang.String) as Void {
-        dc.setColor(0x0d1b26, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(BADGE_BG, Graphics.COLOR_TRANSPARENT);
         dc.fillCircle(cx, cy, r);
         dc.setColor(ACCENT, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(2);
@@ -969,6 +984,25 @@ class SantoriniSunsetView extends WatchUi.WatchFace {
             Icons.drawSunrise(dc, iconX, iconTopY, iconSize, ACCENT);
         } else if (fieldId == FIELD_SUNSET) {
             Icons.drawSunset(dc, iconX, iconTopY, iconSize, ACCENT);
+        } else if (fieldId == FIELD_MOONPHASE) {
+            var phase = moonPhaseIndex();
+            if (phase == 0) {
+                Icons.drawMoonNew(dc, iconX, iconTopY, iconSize, ACCENT, BADGE_BG);
+            } else if (phase == 1) {
+                Icons.drawMoonWaxingCrescent(dc, iconX, iconTopY, iconSize, ACCENT, BADGE_BG);
+            } else if (phase == 2) {
+                Icons.drawMoonFirstQuarter(dc, iconX, iconTopY, iconSize, ACCENT, BADGE_BG);
+            } else if (phase == 3) {
+                Icons.drawMoonWaxingGibbous(dc, iconX, iconTopY, iconSize, ACCENT, BADGE_BG);
+            } else if (phase == 4) {
+                Icons.drawMoonFull(dc, iconX, iconTopY, iconSize, ACCENT, BADGE_BG);
+            } else if (phase == 5) {
+                Icons.drawMoonWaningGibbous(dc, iconX, iconTopY, iconSize, ACCENT, BADGE_BG);
+            } else if (phase == 6) {
+                Icons.drawMoonLastQuarter(dc, iconX, iconTopY, iconSize, ACCENT, BADGE_BG);
+            } else {
+                Icons.drawMoonWaningCrescent(dc, iconX, iconTopY, iconSize, ACCENT, BADGE_BG);
+            }
         } else {
             Icons.drawSteps(dc, iconX, iconTopY, iconSize, ACCENT);
         }

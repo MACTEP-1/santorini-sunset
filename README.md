@@ -16,6 +16,62 @@ that direction was set. Same caveat as the other projects in this set: I
 simulated device - treat it as a carefully-reasoned first draft, not
 tested software.
 
+## Seventeenth round: Moon phase field
+
+A 14th selectable stat-badge field, from a second "any more features"
+brainstorm. Unlike every other field in this project, `moonPhaseIndex()`/
+`moonPhaseName()` (new shared file, `garmin-shared-src/MoonPhase.mc`) are
+pure date math - no Weather permission, no location, no null/"--"
+fallback, since the physical lunar phase doesn't depend on where you are,
+only the current instant.
+
+**The math.** Days elapsed since a known new moon (2000-01-06 18:14 UTC),
+mod the ~29.53-day synodic month, bucketed into the standard 8 phases
+(New, Waxing Crescent, First Quarter, Waxing Gibbous, Full, Waning
+Gibbous, Last Quarter, Waning Crescent). The reference epoch and synodic-
+month constant were cross-checked against two independent sources before
+use - they agree to within a second - see `MoonPhase.mc`'s header comment
+for the exact numbers and sourcing. Accurate to roughly half a day,
+comfortably inside each ~3.7-day icon bucket.
+
+**The icons.** 8 new shapes in Icons.mc: New/Full/quarters built from
+circle+rectangle overlays, crescents/gibbous from an offset circle+
+ellipse "eclipse" technique (same toolkit already used for the weather
+icons - `fillCircle`/`fillEllipse`/`fillRectangle`, nothing new). Each
+takes the badge's own background color as a `shadowColor` parameter so
+the moon's dark side reads as absence rather than a mismatched patch
+sitting on the badge - this required pulling each project's previously-
+inline badge-fill color out into a named `BADGE_BG` constant. Mocked up
+in Python at true badge-icon size before writing any Monkey C, all 8
+phases distinguishable at a glance - `verify/moon_zoomed.png`,
+`verify/moon_true_size.png`.
+
+Added to the field picker (now 14 options) in both the phone-based
+Settings and the on-device Customize menu - only one place needed
+touching for the on-device picker (`garmin-shared-src/SettingsMenu.mc`'s
+`pushFieldPicker()`), the payoff from refactoring that into a shared
+function a few rounds back instead of hand-porting the list a third time.
+
+**Status: delivered and synced across all three projects + garmin-shared-src,
+not yet build-confirmed.**
+**Update: the badge text is now a single emoji glyph, not a short name.** The
+"Wax Cr"/"Last Qtr"-style text above was itself a fix for an even earlier bug
+(the full phase names overflowed the badge on real hardware). User asked to
+test whether Garmin's built-in font even supports the standard Unicode
+moon-phase emoji (🌑🌒🌓🌔🌕🌖🌗🌘) - two rounds of on-device testing on
+milan-personal (all 8 concatenated first, confirming they render as distinct
+shapes rather than blank/tofu boxes; then a single glyph for the real
+current phase, confirming it fits the badge cleanly) came back positive, so
+`moonPhaseEmoji()` (garmin-shared-src/MoonPhase.mc) replaced the short-label
+version everywhere. **Known, consciously accepted risk**: only confirmed on
+the user's Venu 2 - rossonero/santorini-sunset each target 8 more device
+models this can't be tested on, and Garmin's own bug tracker has a
+confirmed real case of a font present on one device being missing on
+another (silently falling back), so glyph availability isn't guaranteed
+project-wide. Surfaced as an explicit choice (emoji everywhere vs.
+vector-icon-only on the untestable projects) - user chose emoji everywhere.
+
+
 ## Sixteenth fix: charging bolt, weather-condition icon, long-press to swap fields
 
 Same three additions as rossonero/milan-personal this round - see
