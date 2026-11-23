@@ -10,7 +10,7 @@ using Toybox.WatchUi;
 // MAJOR.MINOR.PATCH scheme. 1.0.1 = step-progress-ring rendering fix;
 // 1.1.0 = this round, ring now also shown in Analog mode (MINOR, a real
 // behavior change, not just a fix).
-const APP_VERSION = "1.1.0";
+const APP_VERSION = "1.2.0";
 
 class SantoriniSunsetApp extends Application.AppBase {
     function initialize() {
