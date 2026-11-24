@@ -18,7 +18,11 @@
   <iq:products> list itself is untouched.
 -->
 <iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
-    <iq:application id="8eb35071-3151-4f55-9fb1-06664f01f526" type="watchface" name="@Strings.AppName" entry="SantoriniSunsetApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="4.2.0">
+    <!-- App IDs: the Store requires a different UUID for the Beta listing and the
+         public listing.
+           Public release: 7a1cb720-0957-4efb-887c-b850c5136e3e  (active below)
+           Beta listing:   8eb35071-3151-4f55-9fb1-06664f01f526  (swap in to push a Beta update) -->
+    <iq:application id="7a1cb720-0957-4efb-887c-b850c5136e3e" type="watchface" name="@Strings.AppName" entry="SantoriniSunsetApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="4.2.0">
         <iq:products>
             <iq:product id="epix2"/>
             <iq:product id="fenix7"/>
