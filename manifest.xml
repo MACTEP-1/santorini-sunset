@@ -33,7 +33,6 @@
             <iq:product id="fr965"/>
             <iq:product id="venu2"/>
             <iq:product id="venu2s"/>
-            <iq:product id="vivoactive5"/>
         </iq:products>
         <!-- Permission history: "Weather" was tried first and rejected by a
          real compiler run ("Invalid permission provided: Weather") -

@@ -15,3 +15,11 @@ developer_key
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Extra compiler output (intermediate build folders and the generated
+# settings file the SDK writes next to the project)
+gen/
+mir/
+internal-mir/
+external-mir/
+*-settings.json
